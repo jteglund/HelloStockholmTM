@@ -1,0 +1,1 @@
+Hello Stockholm Tournament Manager
