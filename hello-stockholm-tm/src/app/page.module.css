@@ -15,3 +15,28 @@
   position: relative;
   padding: 4rem 0;
 }
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 1rem 0;
+  background-color: black;
+}
+
+.navbarText {
+  color: #00b0f4;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-weight: bold;
+  font-size: medium;
+}
+
+.navbarTextActive {
+  color: #ff0084;
+  padding-right: 10px;
+  padding-left: 10px;
+  font-weight: bold;
+  font-size: medium;
+}
