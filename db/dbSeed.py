@@ -59,7 +59,7 @@ if __name__ == '__main__':
         team = ("KFUM ÖREBRO", 0, 1)
         create_team(conn, team)
         
-        game = ('SUFC ODIN', 'ÖREBRO', "GOA", "DATUM", 0, "NULL", "NULL");
+        game = ('SUFC ODIN', 'ÖREBRO', "GOA", "DATUM", 0, "NULL", "NULL")
         game_id = create_game(conn, game)
 
         groupTeams = (1, 1)
