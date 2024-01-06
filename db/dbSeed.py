@@ -51,15 +51,15 @@ if __name__ == '__main__':
 
     # create tables
     if conn is not None:
-        group = ("OA", 0, 2, "SUFC ODIN", "KFUM ÖREBAJS")
+        group = ("OA", 0, 2, "SUFC ODIN", "KFUM ÖREBRO")
         group_id = create_group(conn, group)
 
         team = ("SUFC Odin", 0, 1)
         create_team(conn, team)
-        team = ("KFUM ÖREBAJS", 0, 1)
+        team = ("KFUM ÖREBRO", 0, 1)
         create_team(conn, team)
         
-        game = ('SUFC ODIN', 'ÖREBAJS', "GOA", "DATUM", 0, "NULL", "NULL");
+        game = ('SUFC ODIN', 'ÖREBRO', "GOA", "DATUM", 0, "NULL", "NULL");
         game_id = create_game(conn, game)
 
         groupTeams = (1, 1)
