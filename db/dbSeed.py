@@ -11,8 +11,8 @@ def create_game(conn, game):
     return cur.lastrowid
 
 def create_group(conn, group):
-    sql = ''' INSERT INTO groups(name,division,size)
-              VALUES(?,?,?) '''
+    sql = ''' INSERT INTO groups(name,division,size,team1,team2)
+              VALUES(?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, group)
     conn.commit()
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     # create tables
     if conn is not None:
-        group = ("OA", 0, 2)
+        group = ("OA", 0, 2, "SUFC ODIN", "KFUM ÖREBAJS")
         group_id = create_group(conn, group)
 
         team = ("SUFC Odin", 0, 1)
