@@ -119,13 +119,6 @@ if __name__ == '__main__':
         create_table(conn, sql_create_group_teams)
         create_table(conn, sql_create_group_games)
 
-        game = ('SUFC ODIN', 'ÖREBAJS', "GOA", "DATUM", 0, "NULL", "NULL");
-        #game_id = create_game(conn, game)
-
-        group = ("OA", 0, 4)
-        #group_id = create_group(conn, group)
-        #print(group_id)
-
         conn.close()
     else:
         print("Error! cannot create the database connection.")
