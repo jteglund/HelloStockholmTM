@@ -4,20 +4,131 @@ import styles from './page.module.css'
 import { createGame } from '@/api/game'
 import { db } from '../firebase-config'
 import { collection, getDocs } from 'firebase/firestore'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GameListItem from '../../components/Game'
+import TextButton from '@/components/TextButton'
 
 export default function Home() {
   const gamesCollectionRef = collection(db, "Game");
+  const [games, setGames] = useState([]);
+  const [openGames, setOpenGames] = useState([]);
+  const [womenGames, setWomenGames] = useState([]);
+  const [openGamesUpcoming, setOpenGamesUpcoming] = useState([]);
+  const [openGamesLive, setOpenGamesLive] = useState([]);
+  const [openGamesPrev, setOpenGamesPrev] = useState([]);
+  const [womenGamesUpcoming, setWomenGamesUpcoming] = useState([]);
+  const [womenGamesLive, setWomenGamesLive] = useState([]);
+  const [womenGamesPrev, setWomenGamesPrev] = useState([]);
+
+  const [openWomen, setOpenWomen] = useState(true);
+  const [filter, setFilter] = useState("Upcoming");
+
+  const handleOpenButtonPress = () => {
+    setOpenWomen(true);
+  }
+  const handleWomenButtonPress = () => {
+    setOpenWomen(false);
+  }
+  
+
+  const sortGamesByDate = (game1, game2) => {
+    if(game1.DateTime.substring(8, 10) <= game2.DateTime.substring(8, 10)){
+      return -1;
+    }
+    if(game1.DateTime.substring(0, 2) <= game2.DateTime.substring(0, 2)){
+      return -1;
+    }
+    if(game1.DateTime.substring(3, 5) <= game2.DateTime.substring(3, 5)){
+      return -1;
+    }
+    if(game1.Field.substring(6, 7) <= game2.Field.substring(6, 7)){
+      return -1;
+    }
+    else return 1;
+  }
+  
+  const setOpenWomenGames = () => {
+    let openUp = [];
+    let openLive = [];
+    let openPrev = [];
+
+    let womenUp = [];
+    let womenLive = [];
+    let womenPrev = [];
+
+    for(let g in games){
+      if(games[g].Division === 0){
+        if(games[g].Status === 0){
+          openUp.push(games[g])
+        }
+        if(games[g].Status === 1){
+          openLive.push(games[g])
+        }
+        if(games[g].Status === 2){
+          openPrev.push(games[g])
+        }
+      }else if (games[g].Division === 1){
+        if(games[g].Status === 0){
+          womenUp.push(games[g])
+        }
+        if(games[g].Status === 1){
+          womenLive.push(games[g])
+        }
+        if(games[g].Status === 2){
+          womenPrev.push(games[g])
+        }
+      }
+    }
+    setOpenGamesUpcoming(openUp);
+    setOpenGamesLive(openLive);
+    setOpenGamesPrev(openPrev);
+
+    setWomenGamesUpcoming(womenUp);
+    setWomenGamesLive(womenLive);
+    setWomenGamesPrev(womenPrev);
+  }
 
   useEffect(() => {
-    //createGame(gamesCollectionRef, "SUFC Odin", "JDomcGBk2tsSajFdRrmA", "Stenungsund", "vbFKZ8Es2Gp3zUrL7Z6j", "08:00 - 25 Feb", "Field 1", 0);
+    //createGame(gamesCollectionRef, "TEST3", "aqKio94NNAmTmrLqnbW0", "TEST4", "vbFKZ8Es2Gp3zUrL7Z6j", "15:00 - 23 Feb", "Field 1", 1, "OA3");
+    
+    const getGames = async () => {
+      const data = await getDocs(gamesCollectionRef);
+      let sortedGames = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      sortedGames.sort(sortGamesByDate);
+      setGames(sortedGames);
+    }
+    
+    getGames();
   }, [])
 
+  useEffect(()=> {
+    setOpenWomenGames(games)
+  }, [games])
+  
   return (
     <main className={styles.main}>
       <div className={styles.center}>
-        <GameListItem />
+        <TextButton prompt={"OPEN"} handlePress={handleOpenButtonPress} active={openWomen}/>
+        <TextButton prompt={"WOMEN"} handlePress={handleWomenButtonPress} active={!openWomen}/>
+      </div>
+      <div className={styles.gameListContainer}>
+        <select className={styles.filter} value={filter} onChange={e => setFilter(e.target.value)}>
+          <option value="Upcoming">Upcoming games</option>
+          <option value="Live">Live games</option>
+          <option value="Previous">Previous games</option>
+        </select>
+        { openWomen && filter === "Upcoming"
+            ? openGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)
+            : openWomen && filter === "Live"
+            ? openGamesLive.map((game) => <GameListItem key={game.id} game={game} />) 
+            : openWomen && filter === "Previous" 
+            ? openGamesPrev.map((game) => <GameListItem key={game.id} game={game} />)
+            : !openWomen && filter === "Upcoming"
+            ? womenGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)
+            : !openWomen && filter === "Live"
+            ? womenGamesLive.map((game) => <GameListItem key={game.id} game={game} />) 
+            : womenGamesPrev.map((game) => <GameListItem key={game.id} game={game} />)
+        }
       </div>
     </main>
   )
