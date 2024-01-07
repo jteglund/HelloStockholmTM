@@ -66,3 +66,14 @@
   color: white;
   border-radius: 15%;
 }
+
+.teamListContainer {
+  background-color: #ff0084;
+  padding: 40%;
+  margin-bottom: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 1rem 0;
+}

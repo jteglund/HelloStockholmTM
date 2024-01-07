@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { db } from './firebase-config'
 import { collection, getDocs } from 'firebase/firestore'
 import { createTeam } from '@/api/team'
+import TeamsList from '@/components/TeamsList'
 
 export default function Home() {
   const [openWomen, setOpenWomen] = useState(true);
@@ -35,14 +36,8 @@ export default function Home() {
         <TextButton prompt={"WOMEN"} handlePress={handleWomenButtonPress} active={!openWomen}/>
       </div>
       <div>
-          {teams.map((team) => {
-            return (
-              <div>
-                <h1>{team.Name}</h1>
-              </div>
-            );
-          })}
-        </div>
+          {teams.map((team) => <TeamsList key={team.id} team={team} />)}
+      </div>
     </main>
   )
 }
