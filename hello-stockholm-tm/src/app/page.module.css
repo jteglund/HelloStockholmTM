@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
+  padding: 1rem;
   min-height: 100vh;
 }
 
@@ -13,7 +13,7 @@
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 4rem 0;
+  padding: 2rem 0;
 }
 
 .navbar {
@@ -39,4 +39,30 @@
   padding-left: 10px;
   font-weight: bold;
   font-size: medium;
+}
+
+.textButton {
+  border: none;
+  background-color: #00b0f4;
+  padding: 10%;
+  margin-left: 10%;
+  margin-right: 10%;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: medium;
+  color: white;
+  border-radius: 15%;
+}
+
+.textButtonActive {
+  border: none;
+  background-color: #005c83;
+  padding: 10%;
+  margin-left: 10%;
+  margin-right: 10%;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: medium;
+  color: white;
+  border-radius: 15%;
 }
