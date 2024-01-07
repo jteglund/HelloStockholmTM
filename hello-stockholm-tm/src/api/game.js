@@ -1,7 +1,6 @@
-import { db } from "../app/firebase-config";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 
-export async function createGame(gamesCollectionRef, team1name, team1id, team2name, team2id, datetime, field, division){
+export async function createGame(gamesCollectionRef, team1name, team1id, team2name, team2id, datetime, field, division, gamename){
   let game = 
   {
     Team1Name: team1name,
@@ -16,6 +15,7 @@ export async function createGame(gamesCollectionRef, team1name, team1id, team2na
     DateTime: datetime,
     Field: field,
     Division: division,
+    GameName: gamename,
   }
 
   await addDoc(gamesCollectionRef, game);
