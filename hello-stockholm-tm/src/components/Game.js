@@ -1,5 +1,6 @@
 import styles from '../app/schedule/page.module.css'
 import Link from 'next/link';
+import { convertMinutesToDate } from '@/api/game';
 
 export default function GameListItem({game}) {
     const url = '/game/' + game.id;
@@ -29,7 +30,7 @@ export default function GameListItem({game}) {
                 </div>
                 <div>
                     <div className={styles.gameRightTopItem}>
-                        <h4 className={styles.textCenter}>{game.DateTime}</h4>
+                        <h4 className={styles.textCenter}>{convertMinutesToDate(game.DateTime)}</h4>
                     </div>
                     <div className={styles.gameRightBottomItem}>
                         <h4 className={styles.textCenter}>{game.Field}</h4>

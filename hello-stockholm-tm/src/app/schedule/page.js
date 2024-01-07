@@ -32,16 +32,7 @@ export default function Home() {
   
 
   const sortGamesByDate = (game1, game2) => {
-    if(game1.DateTime.substring(8, 10) <= game2.DateTime.substring(8, 10)){
-      return -1;
-    }
-    if(game1.DateTime.substring(0, 2) <= game2.DateTime.substring(0, 2)){
-      return -1;
-    }
-    if(game1.DateTime.substring(3, 5) <= game2.DateTime.substring(3, 5)){
-      return -1;
-    }
-    if(game1.Field.substring(6, 7) <= game2.Field.substring(6, 7)){
+    if(game1.DateTime <= game2.DateTime){
       return -1;
     }
     else return 1;
