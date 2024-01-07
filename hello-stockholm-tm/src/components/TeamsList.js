@@ -1,11 +1,16 @@
 import styles from '../app/page.module.css'
+import Link from 'next/link';
 
-export default function TeamsList({team, onClick}) {
+export default function TeamsList({team}) {
+    const url = '/team/' + team.id;
+
     return (
-        <div className={styles.teamListItem}>
-            <h4>
-                {team.Name}
-            </h4>
-        </div>
+        <Link href={url}>
+            <div className={styles.teamListItem}>
+                <h4>
+                    {team.Name}
+                </h4>
+            </div>
+        </Link>
     )
   }

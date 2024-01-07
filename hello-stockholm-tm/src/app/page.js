@@ -52,6 +52,7 @@ export default function Home() {
   useEffect(() => {
     setTeamsByDivision(teams);
   }, [teams])
+
   return (
     <main className={styles.main}>
       <div className={styles.center}>
