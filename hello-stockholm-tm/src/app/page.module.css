@@ -2,9 +2,8 @@
   background-color: #00cc8c;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 2rem;
   min-height: 100vh;
 }
 
@@ -13,7 +12,7 @@
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 2rem 0;
+  padding: 1rem 0;
 }
 
 .navbar {
@@ -51,7 +50,7 @@
   font-weight: bold;
   font-size: medium;
   color: white;
-  border-radius: 15%;
+  border-radius: 10px;
 }
 
 .textButtonActive {
@@ -68,12 +67,27 @@
 }
 
 .teamListContainer {
-  background-color: #ff0084;
-  padding: 40%;
-  margin-bottom: 10%;
-  display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 1rem 0;
+  margin-top: 2%;
+}
+
+.teamListItem {
+  width: 250px;
+  margin-bottom: 5%;
+  background-color: #ff0084;
+  border-radius: 10px;
+  padding: 5%;
+  text-align: center;
+}
+
+.teamListItem:hover {
+  width: 250px;
+  margin-bottom: 5%;
+  background-color: #bb0064;
+  border-radius: 10px;
+  padding: 5%;
+  text-align: center;
+  cursor: pointer;
 }

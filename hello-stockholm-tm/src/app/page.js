@@ -11,7 +11,9 @@ import TeamsList from '@/components/TeamsList'
 export default function Home() {
   const [openWomen, setOpenWomen] = useState(true);
   const [teams, setTeams] = useState([]);
-  const teamsCollectionRef = collection(db, "Team")
+  const [openTeams, setOpenTeams] = useState([]);
+  const [womenTeams, setWomenTeams] = useState([]);
+  const teamsCollectionRef = collection(db, "Team");
 
   const handleOpenButtonPress = () => {
     setOpenWomen(true);
@@ -19,6 +21,23 @@ export default function Home() {
 
   const handleWomenButtonPress = () => {
     setOpenWomen(false);
+  }
+
+  const setTeamsByDivision = () => {
+    let open = [];
+    let women = [];
+
+    for(let t in teams){
+      if(teams[t].Division === 0){
+        open.push(teams[t]);
+      }else if (teams[t].Division === 1){
+        women.push(teams[t]);
+      }
+    }
+    open.sort((a, b) => (a.Name > b.Name) ? 1 : -1)
+    women.sort((a, b) => (a.Name > b.Name) ? 1 : -1)
+    setOpenTeams(open);
+    setWomenTeams(women);
   }
 
   useEffect(() => {
@@ -29,14 +48,21 @@ export default function Home() {
     
     getTeams();
   }, [])
+
+  useEffect(() => {
+    setTeamsByDivision(teams);
+  }, [teams])
   return (
     <main className={styles.main}>
       <div className={styles.center}>
         <TextButton prompt={"OPEN"} handlePress={handleOpenButtonPress} active={openWomen}/>
         <TextButton prompt={"WOMEN"} handlePress={handleWomenButtonPress} active={!openWomen}/>
       </div>
-      <div>
-          {teams.map((team) => <TeamsList key={team.id} team={team} />)}
+      <div className={styles.teamListContainer}>
+        {openWomen 
+                    ? openTeams.map((team) => <TeamsList key={team.id} team={team} />) 
+                    : womenTeams.map((team) => <TeamsList key={team.id} team={team} />)        
+        }
       </div>
     </main>
   )
