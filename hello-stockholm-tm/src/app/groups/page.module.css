@@ -1,0 +1,67 @@
+.main {
+    background-color: #00cc8c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    min-height: 100vh;
+}
+  
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0rem 0;
+}
+
+.container {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-top: 2%;
+}
+
+.GroupItemName {
+    background-color: #3CA5F1;
+    width: 150px;
+}
+
+.GroupTopContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.GroupStatContainer {
+    background-color: #3CA5F1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.GroupPtsContainer {
+    background-color: #D3A400;
+}
+
+.GroupPtsContainerBottom {
+    background-color: #D3A400;
+    border-bottom-right-radius: 10px;
+}
+
+.GroupItemNameBottom {
+    background-color: #3CA5F1;
+    width: 150px;
+    border-bottom-left-radius: 10px;
+}
+
+.text {
+    padding: 10px;
+    color: black;
+}
+
+.GroupListItem {
+    margin-bottom: 40px;
+}
