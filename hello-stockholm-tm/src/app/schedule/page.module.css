@@ -106,3 +106,64 @@
 .textCenter {
     color: white;
 }
+
+.textStatusBar {
+    color: white;
+    padding: 5%;
+}
+
+.StatusBar{
+    background-color: #149CE9;
+    border-radius: 10px;
+    justify-content: center;
+    text-align: center;
+    width: 100px;
+}
+
+.InfoBar{
+    background-color: #149CE9;
+    border-radius: 10px;
+    justify-content: center;
+    text-align: center;
+    width: 100px;
+    margin-right: 5%;
+    margin-left: 5%;
+    margin-top: 8%;
+}
+
+.timeContainer {
+    margin-top: 1%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0rem 0;
+}
+
+.TeamLeftName{
+    background-color: #149CE9;
+    justify-content: center;
+    text-align: center;
+    width: 200px;
+}
+
+.TeamLeftScore{
+    background-color: #ffffff;
+    justify-content: center;
+    text-align: center;
+    width: 50px;
+}
+
+.TeamLeftScoreText {
+    padding: 20%;
+}
+
+.TeamLeftText {
+    color: white;
+    padding: 5%;
+}
+
+.TimeText {
+    font-size: 50px;
+    color: white;
+}

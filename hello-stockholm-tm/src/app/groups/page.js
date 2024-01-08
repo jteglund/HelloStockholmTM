@@ -5,7 +5,7 @@ import styles from './page.module.css'
 import TextButton from '@/components/TextButton'
 import GroupListItem from '@/components/GroupListItem';
 import { db } from '../firebase-config'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs} from 'firebase/firestore'
 import { createGroup } from '@/api/group';
 
 export default function Home() {
