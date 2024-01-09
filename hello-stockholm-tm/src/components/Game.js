@@ -9,12 +9,17 @@ export default function GameListItem({game}) {
         <Link href={url}>
             <div className={styles.gameContainer}>
                 <div>
-                    <div className={styles.gameTopItem}>
-                        <h4 className={styles.textCenter}>{game.Team1Name} - {game.Team2Name}</h4>
+                <div className={styles.gameBottomContainer}>
+                        <div className={styles.gameTopLeftItem}>
+                            <h4 className={styles.textLeft}>{game.Team1Name}</h4>
+                        </div>
+                        <div className={styles.gameTopRightItem}>
+                            <h4 className={styles.textRight}>{game.GameName}</h4>
+                        </div>
                     </div>
                     <div className={styles.gameBottomContainer}>
                         <div className={styles.gameBottomLeftItem}>
-                            <h4 className={styles.textLeft}>{game.GameName}</h4>
+                            <h4 className={styles.textLeft}>{game.Team2Name}</h4>
                         </div>
                         <div className={styles.gameBottomRightItem}>
                             <h4 className={styles.textRight}>

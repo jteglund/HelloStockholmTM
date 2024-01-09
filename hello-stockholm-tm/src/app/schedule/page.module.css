@@ -56,20 +56,20 @@
 }
 
 .gameBottomLeftItem {
-    width: 175px;
+    width: 150px;
     margin-bottom: 5%;
     background-color: #149CE9;
     border-bottom-left-radius: 10px;
-    padding: 2%;
+    padding: 4%;
     display: flex;
     position: relative;
 }
 
 .gameBottomRightItem {
-    width: 175px;
+    width: 100px;
     margin-bottom: 5%;
     background-color: #149CE9;
-    padding: 2%;
+    padding: 4%;
     text-align: right;
 }
 
@@ -166,4 +166,20 @@
 .TimeText {
     font-size: 50px;
     color: white;
+}
+
+.gameTopLeftItem {
+    width: 150px;
+    background-color: #149CE9;
+    border-top-left-radius: 10px;
+    padding: 4%;
+    display: flex;
+    position: relative;
+}
+
+.gameTopRightItem {
+    width: 100px;
+    background-color: #149CE9;
+    padding: 4%;
+    text-align: right;
 }

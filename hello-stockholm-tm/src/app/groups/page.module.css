@@ -60,7 +60,8 @@
 
 .text {
     padding: 10px;
-    color: black;
+    color: white;
+    font-weight: bold;
 }
 
 .GroupListItem {

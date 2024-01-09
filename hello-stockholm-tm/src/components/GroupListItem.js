@@ -54,7 +54,6 @@ export default function GroupListItem({group}) {
         let lst = [];
         
         for(let i = 0; i < nTeams-1; i++){
-            console.log(i)
             let team = 
             {
                 id: i,
@@ -67,7 +66,6 @@ export default function GroupListItem({group}) {
             }
             lst.push(team)
         }
-        console.log(lst)
         setTeamList(lst);
 
         let lastTeam = 
