@@ -130,15 +130,27 @@
     width: 100px;
 }
 
-.InfoBar{
-    background-color: #149CE9;
-    border-radius: 10px;
+.InfoBarLeft{
+    background-color: #b58e00;
+    border-bottom-left-radius: 10px;
     justify-content: center;
     text-align: center;
-    width: 100px;
-    margin-right: 5%;
-    margin-left: 5%;
-    margin-top: 8%;
+    width: 84px;
+}
+
+.InfoBarCenter{
+    background-color: #b58e00;
+    justify-content: center;
+    text-align: center;
+    width: 83px;
+}
+
+.InfoBarRight{
+    background-color: #b58e00;
+    border-bottom-right-radius: 10px;
+    justify-content: center;
+    text-align: center;
+    width: 83px;
 }
 
 .timeContainer {
@@ -151,7 +163,7 @@
 }
 
 .TeamLeftName{
-    background-color: #149CE9;
+    background-color: #39abed;
     justify-content: center;
     text-align: center;
     width: 200px;
@@ -172,9 +184,18 @@
     padding: 22%;
 }
 
+.TeamLeftScoreText3 {
+    padding: 24%;
+}
+
 .TeamLeftText {
     color: white;
     padding: 5%;
+}
+
+.TeamLeftText2 {
+    color: white;
+    padding: 12px;
 }
 
 .TimeText {
@@ -214,3 +235,21 @@
     border-top-right-radius: 10px;
 }
 
+.gameDayContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.gameDayText{
+    color: white;
+}
+
+.infoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0rem 0;
+}

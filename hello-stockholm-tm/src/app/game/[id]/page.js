@@ -52,6 +52,9 @@ export default function Home({params}) {
             <div className={styles.timeContainer}>
                 <h1 className={styles.TimeText}>{time}</h1>
             </div>
+            <div className={styles.gameDayContainer}>
+                <h4 className={styles.gameDayText}>{day} Feb</h4>
+            </div>
             <div className={styles.timeContainer}>
                 <TeamLeft 
                     teamName1={game.Team1Name} 
@@ -60,12 +63,9 @@ export default function Home({params}) {
                     score2={game.Team2Score}
                 />
             </div>
-            <div className={styles.timeContainer}>
-                <InfoBar prompt={game.GameName}/>
-                <InfoBar prompt={game.Field}/>
-            </div>
-            <div className={styles.timeContainer}>
-                <InfoBar prompt={day + " Feb"}/>
+            <div className={styles.infoContainer}>
+                <InfoBar prompt={game.Field} alignment={"left"}/>
+                <InfoBar prompt={game.GameName} alignment={"center"}/>
                 <InfoBar prompt={division}/>
             </div>
         </>
