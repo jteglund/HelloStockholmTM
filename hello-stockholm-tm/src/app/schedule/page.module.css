@@ -57,19 +57,19 @@
 
 .gameBottomLeftItem {
     width: 150px;
-    margin-bottom: 5%;
+    margin-bottom: 20px;
     background-color: #149CE9;
     border-bottom-left-radius: 10px;
-    padding: 4%;
+    padding: 11px;
     display: flex;
     position: relative;
 }
 
 .gameBottomRightItem {
     width: 100px;
-    margin-bottom: 5%;
+    margin-bottom: 20px;
     background-color: #149CE9;
-    padding: 4%;
+    padding: 11px;
     text-align: right;
 }
 
@@ -99,6 +99,16 @@
 }
 
 .textRight {
+    float: right;
+    color: rgb(255, 255, 255);
+}
+
+.textTopLeft {
+    float: left;
+    color: white;
+}
+
+.textTopRight {
     float: right;
     color: rgb(255, 255, 255);
 }
@@ -155,7 +165,11 @@
 }
 
 .TeamLeftScoreText {
-    padding: 20%;
+    padding: 23%;
+}
+
+.TeamLeftScoreText2 {
+    padding: 22%;
 }
 
 .TeamLeftText {
@@ -171,8 +185,7 @@
 .gameTopLeftItem {
     width: 150px;
     background-color: #149CE9;
-    border-top-left-radius: 10px;
-    padding: 4%;
+    padding: 12px;
     display: flex;
     position: relative;
 }
@@ -180,6 +193,24 @@
 .gameTopRightItem {
     width: 100px;
     background-color: #149CE9;
-    padding: 4%;
+    padding: 12px;
     text-align: right;
 }
+
+.gameDateBox {
+    width: 150px;
+    background-color: #44baff;
+    border-top-left-radius: 10px;
+    padding: 4%;
+    display: flex;
+    position: relative;
+}
+
+.gameFieldBox {
+    width: 150px;
+    background-color: #44baff;
+    padding: 4%;
+    text-align: right;
+    border-top-right-radius: 10px;
+}
+

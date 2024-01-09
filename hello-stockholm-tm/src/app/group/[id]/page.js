@@ -12,6 +12,9 @@ export default function Home({params}) {
     const gamesRef = collection(db, "Game");
     const [group, setGroup] = useState(null);
     const [games, setGames] = useState(null);
+    const [gamesLive, setGamesLive] = useState(null);
+    const [gamesUpcoming, setGamesUp] = useState(null);
+    const [gamesPrev, setGamesPrev] = useState(null);
 
     useEffect(() => {
         const getGroup = async () => {
@@ -37,6 +40,34 @@ export default function Home({params}) {
         }
         getGames();
     }, [group]);
+
+    useEffect(() => {
+        
+        const sortGames = () => {
+            let upcoming = [];
+            let live = [];
+            let prev = [];
+
+            if(games){
+                console.log(games)
+                for(let i in games){
+                    if(games[i].Status === 0){
+                        upcoming.push(games[i]);
+                    }
+                    if(games[i].Status === 1){
+                        live.push(games[i]);
+                    }
+                    if(games[i].Status === 2){
+                        prev.push(games[i]);
+                    }
+                }
+                setGamesUp(upcoming);
+                setGamesLive(live);
+                setGamesPrev(prev);
+            }
+        }
+        sortGames();
+    }, [games])
     
     return (
         <main className={styles.main}>
@@ -48,9 +79,27 @@ export default function Home({params}) {
                 
             </div>
             <div className={styles.container}>
+                <h1 className={styles.textGames}>Games</h1>
                 {
-                    games &&
-                        games.map((game) => <GameListItem key={game.id} game={game} />)
+                    gamesLive &&
+                    <>
+                        <h3 className={styles.textStatus}>Live</h3>
+                        {gamesLive.map((game) => <GameListItem key={game.id} game={game} />)}
+                    </>
+                }
+                {
+                    gamesUpcoming &&
+                    <>
+                        <h3 className={styles.textStatus}>Upcoming</h3>
+                        {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)}
+                    </>
+                }
+                {
+                    gamesPrev &&
+                    <>
+                        <h3 className={styles.textStatus}>Finished</h3>
+                        {gamesPrev.map((game) => <GameListItem key={game.id} game={game} />)}
+                    </>
                 }
             </div>
         </main>
