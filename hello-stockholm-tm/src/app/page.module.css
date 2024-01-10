@@ -100,7 +100,7 @@
 }
 
 .StatsTopBar{
-  background-color: #d072ff;
+  background-color: rgb(206, 130, 244);
   display: flex;
   justify-content: center;
   text-align: center;
