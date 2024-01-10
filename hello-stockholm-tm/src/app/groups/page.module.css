@@ -70,10 +70,14 @@
 
 .textGames{
     color: white;
-    padding-bottom: 10px;
+    border-bottom: solid;
 }
 
 .textStatus{
     color: white;
     padding-bottom: 5px;
+    border-bottom: solid;
+    border-bottom-width: thin;
+    margin-bottom: 5px;
+    border-bottom-color: lightgrey;
 }

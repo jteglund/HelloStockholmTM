@@ -15,6 +15,13 @@
   padding: 1rem 0;
 }
 
+.StatsBarContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
 .navbar {
   display: flex;
   justify-content: center;
@@ -90,4 +97,37 @@
   padding: 5%;
   text-align: center;
   cursor: pointer;
+}
+
+.StatsTopBar{
+  background-color: #D3A400;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  width: 100px;
+}
+
+.textStatsBar {
+  padding: 10px;
+}
+
+.container {
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-top: 2%;
+}
+
+.text{
+  color: white;
+  border-bottom: solid;
+}
+
+.textStatus {
+  color: white;
+  margin-bottom: 10px;
+  border-bottom: solid;
+  border-bottom-width: thin;
+  border-color: lightgrey;
 }

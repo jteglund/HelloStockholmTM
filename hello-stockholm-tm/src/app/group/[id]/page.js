@@ -25,6 +25,13 @@ export default function Home({params}) {
     }, [])
 
     useEffect(() => {
+        const sortGamesByDate = (game1, game2) => {
+            if(game1.DateTime <= game2.DateTime){
+              return -1;
+            }
+            else return 1;
+        }
+
         const getGames = async () => {
             let lst = [];
             if(group){
@@ -35,6 +42,7 @@ export default function Home({params}) {
                     // doc.data() is never undefined for query doc snapshots
                     lst.push({ ...doc.data(), id: doc.id });
                 });
+                lst.sort(sortGamesByDate);
                 setGames(lst);
             }
         }
@@ -78,8 +86,9 @@ export default function Home({params}) {
                 }
                 
             </div>
+            <h1 className={styles.textGames}>Games</h1>
             <div className={styles.container}>
-                <h1 className={styles.textGames}>Games</h1>
+                
                 {
                     gamesLive &&
                     <>
