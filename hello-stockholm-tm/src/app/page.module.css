@@ -100,15 +100,25 @@
 }
 
 .StatsTopBar{
-  background-color: #D3A400;
+  background-color: #d072ff;
   display: flex;
   justify-content: center;
   text-align: center;
   position: relative;
-  width: 100px;
+  width: 110px;
+}
+
+.StatsBottomBar{
+  background-color: #c66ff2;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  width: 110px;
 }
 
 .textStatsBar {
+  color: white;
   padding: 10px;
 }
 
@@ -124,10 +134,18 @@
   border-bottom: solid;
 }
 
+.textTeam{
+  color: white;
+}
+
 .textStatus {
   color: white;
   margin-bottom: 10px;
   border-bottom: solid;
   border-bottom-width: thin;
   border-color: lightgrey;
+}
+
+.teamText {
+  color: white;
 }

@@ -4,17 +4,17 @@ import Link from 'next/link';
 
 function GroupTopItem({group}) {
     return (
-        <div className={styles.GroupTopContainer} style={{borderBottom: "solid", borderBottomWidth: "thin"}}>
-            <div className={styles.GroupItemName} style={{borderTopLeftRadius: "10px"}}>
+        <div className={styles.GroupTopContainer}>
+            <div className={styles.GroupItemNameTop} style={{borderTopLeftRadius: "10px"}}>
                 <div className={styles.text}>{group.Name}</div>
             </div>
-            <div className={styles.GroupStatContainer}>
+            <div className={styles.GroupStatContainerTop}>
                 <div className={styles.text}>G</div>
                 <div className={styles.text}>W</div>
                 <div className={styles.text}>L</div>
                 <div className={styles.text}>+/-</div>
             </div>
-            <div className={styles.GroupPtsContainer} style={{borderTopRightRadius: "10px"}}>
+            <div className={styles.GroupPtsContainerTop} style={{borderTopRightRadius: "10px"}}>
                 <div className={styles.text}>
                     P
                 </div>  
@@ -23,28 +23,55 @@ function GroupTopItem({group}) {
     );
 }
 
-function GroupTeamItem({team, bottom}) {
+function GroupTeamItem({team, bottom, linkTeams}) {
+    let teamUrl = '/team/' + team.id;
+
     return (
-        <div className={styles.GroupTopContainer}>
-            <div className={!bottom ? styles.GroupItemName : styles.GroupItemNameBottom}>
-                <div className={styles.text}>{team.Name}</div>
+        <>
+            { linkTeams &&
+                <Link href={teamUrl}>
+                    <div className={styles.GroupTopContainer}>
+                        <div className={!bottom ? styles.GroupItemName : styles.GroupItemNameBottom}>
+                            <div className={styles.text}>{team.Name}</div>
+                        </div>
+                        <div className={styles.GroupStatContainer}>
+                            <div className={styles.text}>{team.Games}</div>
+                            <div className={styles.text}>{team.Wins}</div>
+                            <div className={styles.text}>{team.Losses}</div>
+                            <div className={styles.text}>{team.PD}</div>
+                        </div>
+                        <div className={!bottom ? styles.GroupPtsContainer : styles.GroupPtsContainerBottom}>
+                            <div className={styles.text}>
+                                {team.P}
+                            </div>  
+                        </div>
+                    </div>
+                </Link>
+            }
+            {!linkTeams &&
+                <div className={styles.GroupTopContainer}>
+                <div className={!bottom ? styles.GroupItemName : styles.GroupItemNameBottom}>
+                    <div className={styles.text}>{team.Name}</div>
+                </div>
+                <div className={styles.GroupStatContainer}>
+                    <div className={styles.text}>{team.Games}</div>
+                    <div className={styles.text}>{team.Wins}</div>
+                    <div className={styles.text}>{team.Losses}</div>
+                    <div className={styles.text}>{team.PD}</div>
+                </div>
+                <div className={!bottom ? styles.GroupPtsContainer : styles.GroupPtsContainerBottom}>
+                    <div className={styles.text}>
+                        {team.P}
+                    </div>  
+                </div>
             </div>
-            <div className={styles.GroupStatContainer}>
-                <div className={styles.text}>{team.Games}</div>
-                <div className={styles.text}>{team.Wins}</div>
-                <div className={styles.text}>{team.Losses}</div>
-                <div className={styles.text}>{team.PD}</div>
-            </div>
-            <div className={!bottom ? styles.GroupPtsContainer : styles.GroupPtsContainerBottom}>
-                <div className={styles.text}>
-                    {team.P}
-                </div>  
-            </div>
-        </div>
+            }
+        </>
+        
     );
 }
 
-export default function GroupListItem({group}) {
+export default function GroupListItem({group, groupsPage}) {
     const [teamList, setTeamList] = useState([]);
     const [lastTeam, setLastTeam] = useState(null);
 
@@ -56,7 +83,8 @@ export default function GroupListItem({group}) {
         for(let i = 0; i < nTeams-1; i++){
             let team = 
             {
-                id: i,
+                key: i,
+                id: group.TeamIDs[i],
                 Name: group.TeamData[i*nStats],
                 Games: group.TeamData[i*nStats + 1],
                 Wins: group.TeamData[i*nStats + 2],
@@ -70,7 +98,8 @@ export default function GroupListItem({group}) {
 
         let lastTeam = 
         {
-            id: nTeams-1,
+            key: nTeams-1,
+            id: group.TeamIDs[nTeams-1],
             Name: group.TeamData[(group.TeamData.length-nStats)],
             Games: group.TeamData[(group.TeamData.length-nStats) + 1],
             Wins: group.TeamData[(group.TeamData.length-nStats) + 2],
@@ -88,16 +117,31 @@ export default function GroupListItem({group}) {
 
     let url = '/group/' + group.id;
     return (
-        <Link href={url}>
-            <div className={styles.GroupListItem}>
-                <GroupTopItem group={group}/>
-                {teamList.map((team) => <GroupTeamItem key={team.id} team={team} />)}
-                { lastTeam != null
-                    ? <GroupTeamItem team={lastTeam} bottom={true}/>
-                    : <></>
-                }
-                
-            </div>
-        </Link>
+        <>
+            { groupsPage &&
+                <Link href={url}>
+                    <div className={styles.GroupListItem}>
+                        <GroupTopItem group={group}/>
+                        {teamList.map((team) => <GroupTeamItem key={team.key} team={team} />)}
+                        { lastTeam != null
+                            ? <GroupTeamItem team={lastTeam} bottom={true}/>
+                            : <></>
+                        }
+                        
+                    </div>
+                </Link>
+            }
+            { !groupsPage &&
+                <div className={styles.GroupListItem}>
+                    <GroupTopItem group={group} />
+                    {teamList.map((team) => <GroupTeamItem key={team.key} team={team} linkTeams={true}/>)}
+                    { lastTeam != null
+                        ? <GroupTeamItem team={lastTeam} bottom={true}/>
+                        : <></>
+                    }
+                </div>
+            }
+        </>
+        
     );
 }

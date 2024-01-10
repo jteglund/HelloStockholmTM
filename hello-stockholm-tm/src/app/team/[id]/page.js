@@ -87,7 +87,7 @@ export default function Home({params}) {
         <main className={styles.main}>
             <div className={styles.center}>
                 { team &&
-                    <h1>{team.Name}</h1>
+                    <h1 className={styles.textTeam}>{team.Name}</h1>
                 }
             </div>
             { team &&
@@ -98,7 +98,7 @@ export default function Home({params}) {
             { groups &&
                 <div className={styles.container}>
                     {groups.map((group) => 
-                        <GroupListItem key={group.id} group={group} />)
+                        <GroupListItem key={group.id} group={group} groupsPage={true}/>)
                     }
                 </div>
             }

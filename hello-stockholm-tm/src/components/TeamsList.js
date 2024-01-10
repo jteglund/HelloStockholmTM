@@ -7,7 +7,7 @@ export default function TeamsList({team}) {
     return (
         <Link href={url}>
             <div className={styles.teamListItem}>
-                <h4>
+                <h4 className={styles.teamText}>
                     {team.Name}
                 </h4>
             </div>

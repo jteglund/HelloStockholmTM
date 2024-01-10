@@ -82,7 +82,7 @@ export default function Home({params}) {
             <div className={styles.container}>
                 {
                     group &&
-                        <GroupListItem group={group}/>
+                        <GroupListItem group={group} groupsPage={false}/>
                 }
                 
             </div>

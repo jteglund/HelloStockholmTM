@@ -75,8 +75,8 @@ export default function Home() {
 
       <div className={styles.container}>
         { openWomen 
-          ? openGroups.map((group) => <GroupListItem key={group.id} group={group} />)
-          : womenGroups.map((group) => <GroupListItem key={group.id} group={group} />) 
+          ? openGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
+          : womenGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>) 
         }
       </div>
     </main>

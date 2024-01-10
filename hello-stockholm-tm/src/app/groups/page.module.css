@@ -23,8 +23,27 @@
 }
 
 .GroupItemName {
-    background-color: #3CA5F1;
+    background-color: #149CE9;
     width: 150px;
+}
+
+.GroupItemNameTop {
+    background-color: #44baff;
+    width: 150px;
+}
+
+.GroupStatContainerTop {
+    background-color: #44baff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 150px;
+}
+
+.GroupPtsContainerTop {
+    background-color: #f79647;
+    padding-left: 1px;
 }
 
 .GroupTopContainer {
@@ -35,7 +54,7 @@
 }
 
 .GroupStatContainer {
-    background-color: #3CA5F1;
+    background-color: #149CE9;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -44,16 +63,16 @@
 }
 
 .GroupPtsContainer {
-    background-color: #D3A400;
+    background-color: #fb8a2d;
 }
 
 .GroupPtsContainerBottom {
-    background-color: #D3A400;
+    background-color: #fb8a2d;
     border-bottom-right-radius: 10px;
 }
 
 .GroupItemNameBottom {
-    background-color: #3CA5F1;
+    background-color: #149CE9;
     width: 150px;
     border-bottom-left-radius: 10px;
 }

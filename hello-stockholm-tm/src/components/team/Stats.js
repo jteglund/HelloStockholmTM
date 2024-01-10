@@ -19,13 +19,13 @@ function StatsTopBar() {
 function StatsBar({wins, losses, pd}) {
     return(
         <>
-            <div className={styles.StatsTopBar} style={{borderBottomLeftRadius: "10px"}}>
+            <div className={styles.StatsBottomBar} style={{borderBottomLeftRadius: "10px"}}>
                 <h4 className={styles.textStatsBar}>{wins}</h4>
             </div>
-            <div className={styles.StatsTopBar}>
+            <div className={styles.StatsBottomBar}>
                 <h4 className={styles.textStatsBar}>{losses}</h4>
             </div>
-            <div className={styles.StatsTopBar} style={{borderBottomRightRadius: "10px"}}>
+            <div className={styles.StatsBottomBar} style={{borderBottomRightRadius: "10px"}}>
                 <h4 className={styles.textStatsBar}>{pd}</h4>
             </div>
         </>

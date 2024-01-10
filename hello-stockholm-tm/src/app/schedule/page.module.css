@@ -60,7 +60,7 @@
     margin-bottom: 20px;
     background-color: #149CE9;
     border-bottom-left-radius: 10px;
-    padding: 11px;
+    padding: 12px;
     display: flex;
     position: relative;
 }
@@ -69,7 +69,7 @@
     width: 100px;
     margin-bottom: 20px;
     background-color: #149CE9;
-    padding: 11px;
+    padding: 12px;
     text-align: right;
 }
 
@@ -131,7 +131,7 @@
 }
 
 .InfoBarLeft{
-    background-color: #b58e00;
+    background-color: #fb8a2d;
     border-bottom-left-radius: 10px;
     justify-content: center;
     text-align: center;
@@ -139,14 +139,14 @@
 }
 
 .InfoBarCenter{
-    background-color: #b58e00;
+    background-color: #fb8a2d;
     justify-content: center;
     text-align: center;
     width: 83px;
 }
 
 .InfoBarRight{
-    background-color: #b58e00;
+    background-color: #fb8a2d;
     border-bottom-right-radius: 10px;
     justify-content: center;
     text-align: center;
@@ -163,7 +163,7 @@
 }
 
 .TeamLeftName{
-    background-color: #39abed;
+    background-color: #149CE9;
     justify-content: center;
     text-align: center;
     width: 200px;
@@ -181,11 +181,15 @@
 }
 
 .TeamLeftScoreText2 {
-    padding: 22%;
+    padding: 24%;
 }
 
 .TeamLeftScoreText3 {
-    padding: 24%;
+    padding: 25%;
+}
+
+.TeamLeftScoreText4 {
+    padding: 25%;
 }
 
 .TeamLeftText {
@@ -195,7 +199,13 @@
 
 .TeamLeftText2 {
     color: white;
+    padding: 13px;
+}
+
+.TeamLeftText3 {
+    color: white;
     padding: 12px;
+    padding-Top: 12px;
 }
 
 .TimeText {

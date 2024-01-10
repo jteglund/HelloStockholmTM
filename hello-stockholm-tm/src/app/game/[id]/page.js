@@ -61,6 +61,8 @@ export default function Home({params}) {
                     score1={game.Team1Score} 
                     teamName2={game.Team2Name} 
                     score2={game.Team2Score}
+                    teamID1={game.Team1ID}
+                    teamID2={game.Team2ID}
                 />
             </div>
             <div className={styles.infoContainer}>
