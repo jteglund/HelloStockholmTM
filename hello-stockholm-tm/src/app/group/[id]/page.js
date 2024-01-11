@@ -93,21 +93,21 @@ export default function Home({params}) {
                     gamesLive &&
                     <>
                         <h3 className={styles.textStatus}>Live</h3>
-                        {gamesLive.map((game) => <GameListItem key={game.id} game={game} />)}
+                        {gamesLive.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesUpcoming &&
                     <>
                         <h3 className={styles.textStatus}>Upcoming</h3>
-                        {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)}
+                        {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesPrev &&
                     <>
                         <h3 className={styles.textStatus}>Finished</h3>
-                        {gamesPrev.map((game) => <GameListItem key={game.id} game={game} />)}
+                        {gamesPrev.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
             </div>

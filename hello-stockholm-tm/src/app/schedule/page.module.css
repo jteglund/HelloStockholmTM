@@ -263,3 +263,15 @@
     position: relative;
     padding: 0rem 0;
 }
+
+.ScoreButton {
+    background-color: #149CE9;
+    width: 100px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.ScoreButtonText {
+    padding: 5%;
+    color: white;
+}

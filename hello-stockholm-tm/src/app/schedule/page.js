@@ -109,16 +109,16 @@ export default function Home() {
           <option value="Previous">Previous games</option>
         </select>
         { openWomen && filter === "Upcoming"
-            ? openGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)
+            ? openGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)
             : openWomen && filter === "Live"
-            ? openGamesLive.map((game) => <GameListItem key={game.id} game={game} />) 
+            ? openGamesLive.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>) 
             : openWomen && filter === "Previous" 
-            ? openGamesPrev.map((game) => <GameListItem key={game.id} game={game} />)
+            ? openGamesPrev.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)
             : !openWomen && filter === "Upcoming"
-            ? womenGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} />)
+            ? womenGamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)
             : !openWomen && filter === "Live"
-            ? womenGamesLive.map((game) => <GameListItem key={game.id} game={game} />) 
-            : womenGamesPrev.map((game) => <GameListItem key={game.id} game={game} />)
+            ? womenGamesLive.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>) 
+            : womenGamesPrev.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)
         }
       </div>
     </main>
