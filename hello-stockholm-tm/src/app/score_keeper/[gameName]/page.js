@@ -3,20 +3,22 @@
 import { useEffect, useState } from 'react'
 import styles from '../page.module.css'
 import { db } from '../../firebase-config'
-import { doc, getDoc, collection, query, getDocs, where, documentId} from 'firebase/firestore'
+import { doc, getDoc, collection, query, getDocs, where, documentId, updateDoc} from 'firebase/firestore'
 import GameListItem from '@/components/Game'
 import ScoreButton from '@/components/game/ScoreButton'
+import StatusButton from '@/components/game/StatusButton'
 
 export default function Home({params}) {
+    const [gameName, setGameName] = useState(params.gameName)
     const [game, setGame] = useState(null);
     const [score1, setScore1] = useState(null);
     const [score2, setScore2] = useState(null);
     const [status, setStatus] = useState(null);
+    const [gamesRef, setGamesRef] = useState(collection(db, "Game"));
 
     useEffect(() => {
         const getGame = async () => {
-            const gamesRef = collection(db, "Game");
-            const q = query(gamesRef, where("GameName", "==", params.gameName));
+            const q = query(gamesRef, where("GameName", "==", gameName));
             const querySnapshot = await getDocs(q);
             let lst = [];
 
@@ -28,13 +30,12 @@ export default function Home({params}) {
             setGame(lst[0]);
         }
         getGame();
-    }, []);
+    }, [gameName, gamesRef, status]);
     
     useEffect(() => {
         if(game){
             setScore1(game.Team1Score);
             setScore2(game.Team2Score);
-            setStatus(game.Status);
         }
     }, [game])
 
@@ -60,26 +61,50 @@ export default function Home({params}) {
         }
     }
 
+    const handleStartGame = async () => {
+        //Sätt status till 1
+        const gameRef = doc(db, "Game", game.id);
+        await updateDoc(gameRef, {Status: 1});
+        setStatus(1);
+    }
+
+    const handleFinishGame = async () => {
+        //Sätt status till 2
+        const gameRef = doc(db, "Game", game.id);
+        await updateDoc(gameRef, {Status: 2});
+        setStatus(2);
+    }
+
     return (
         <main className={styles.main}>
             <div className={styles.center}>
                 { game &&
                     <div>
                         <GameListItem game={game} />
-                        <div className={styles.center}>
-                            <ScoreButton prompt={"-"} handlePress={handleReduceScore} team={1}/>
-                            <h3 className={styles.TeamText}>{game.Team1Name}</h3>
-                            <ScoreButton prompt={"+"} handlePress={handleAddScore} team={1}/>
-                            <h3>{score1}</h3>
-                        </div>
-                        <div className={styles.center}>
-                            <ScoreButton prompt={"-"} handlePress={handleReduceScore} team={2}/>
-                            <h3 className={styles.TeamText}>{game.Team2Name}</h3>
-                            <ScoreButton prompt={"+"} handlePress={handleAddScore} team={2}/>
-                            <h3>{score2}</h3>
+                        <div>
+                        { game.Status === 1 ?
+                            <>
+                                <div className={styles.teamScore}>
+                                    <StatusButton prompt={"Finish game"} handlePress={handleFinishGame} status={game.Status}/> 
+                                </div>
+                                <div className={styles.teamScore}>
+                                    <ScoreButton prompt={"-"} handlePress={handleReduceScore} team={1}/>
+                                    <h3 className={styles.TeamText}>{game.Team1Name}</h3>
+                                    <ScoreButton prompt={"+"} handlePress={handleAddScore} team={1}/>
+                                </div>
+                                <div className={styles.teamScore}>
+                                    <ScoreButton prompt={"-"} handlePress={handleReduceScore} team={2}/>
+                                    <h3 className={styles.TeamText}>{game.Team2Name}</h3>
+                                    <ScoreButton prompt={"+"} handlePress={handleAddScore} team={2}/>
+                                </div>
+                            </>
+                            :
+                            <StatusButton prompt={"Start game"} handlePress={handleStartGame} status={game.Status}/> 
+                        }
                         </div>
                     </div>
                 }
+                
             </div>
         </main>
   )

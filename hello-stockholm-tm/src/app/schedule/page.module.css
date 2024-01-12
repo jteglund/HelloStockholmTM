@@ -266,7 +266,7 @@
 
 .ScoreButton {
     background-color: #149CE9;
-    width: 100px;
+    width: 75px;
     border-radius: 10px;
     text-align: center;
 }
@@ -274,4 +274,16 @@
 .ScoreButtonText {
     padding: 5%;
     color: white;
+}
+
+.textStatusButton {
+    color: white;
+    padding: 2%;
+}
+
+.StatusButton{
+    border-radius: 10px;
+    justify-content: center;
+    text-align: center;
+    width: 300px;
 }
