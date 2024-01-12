@@ -1,13 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import styles from '../page.module.css'
-import { db } from '../../firebase-config'
+import styles from '../../page.module.css'
+import { db } from '../../../firebase-config'
 import { doc, getDoc, collection, query, getDocs, where, documentId, updateDoc} from 'firebase/firestore'
 import GameListItem from '@/components/Game'
 import ScoreButton from '@/components/game/ScoreButton'
 import StatusButton from '@/components/game/StatusButton'
 import FinishGamePopup from '@/components/game/FinishGamePopup'
+import {auth} from '../../../firebase-config'
+import { onAuthStateChanged } from 'firebase/auth'
+import { useRouter } from 'next/navigation'
 
 export default function Home({params}) {
     const [gameName, setGameName] = useState(params.gameName)
@@ -18,7 +21,8 @@ export default function Home({params}) {
     const [gamesRef, setGamesRef] = useState(collection(db, "Game"));
     const [goal, setGoal] = useState(0);
     const [popup, setPopup] = useState(0);
-
+    const [loggedin, setLoggedin] = useState(false);
+    const router = useRouter();
     useEffect(() => {
         const getGame = async () => {
             const q = query(gamesRef, where("GameName", "==", gameName));
@@ -41,6 +45,19 @@ export default function Home({params}) {
             setScore2(game.Team2Score);
         }
     }, [game])
+
+    useEffect(()=>{
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+              const uid = user.uid;
+              setLoggedin(true)
+            } else {
+              setLoggedin(false);
+              router.push('/score_keeper');
+            }
+          });
+         
+    }, [])
 
     const handleAddScore = async (team) => {
         const gameRef = doc(db, "Game", game.id);
