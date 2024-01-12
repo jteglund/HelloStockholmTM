@@ -265,10 +265,10 @@
 }
 
 .ScoreButton {
-    background-color: #149CE9;
     width: 75px;
     border-radius: 10px;
     text-align: center;
+    cursor: pointer;
 }
 
 .ScoreButtonText {
@@ -286,4 +286,40 @@
     justify-content: center;
     text-align: center;
     width: 300px;
+    cursor: pointer;
+}
+
+.popup {
+    background-color: white;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    border-radius: 10px;
+    padding: 0rem 0;
+    width: 400px;
+}
+
+.PopupText {
+    padding: 1%;
+}
+
+.ReturnButton {
+    background-color: #cf3c32;
+    width: 150px;
+    border-radius: 10px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.SaveButton {
+    background-color: #0e9e00;
+    width: 150px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.buttonText {
+    color: white;
+    padding: 5px;
 }
