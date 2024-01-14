@@ -19,7 +19,7 @@ export default function Home() {
   const [teamIndex, setTeamIndex] = useState(null);
   const [editName, setEditName] = useState("");
   const [editDivision, setEditDivision] = useState("");
-
+  
   const updateTeamName = (event) => {
     setTeamName(event.target.value);
   }

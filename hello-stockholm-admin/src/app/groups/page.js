@@ -28,7 +28,22 @@ export default function Home() {
         <main className={styles.main}>
           { loggedin &&
             <div className={styles.centerVert}>
-              <h3>Groups</h3>
+              <h2>Teams</h2>
+              <div className={styles.center}>
+                <Link href={"/loggedin"}>
+                  <div className={styles.enterButton}>Return to dashboard</div>
+                </Link>
+              </div>
+              <div className={styles.center}>
+                <Link href={"/groups/create"}>
+                  <div className={styles.enterButton}>Create new group</div>
+                </Link>
+              </div>
+              <div className={styles.center}>
+                <Link href={"/groups/edit"}>
+                  <div className={styles.enterButton}>Edit group</div>
+                </Link>
+              </div>
             </div>
           }
         </main>
