@@ -77,3 +77,13 @@ margin-right: 5%;
   cursor: pointer;
   text-align: center;
 }
+
+.deleteButton {
+  width: 300px;
+  background-color: rgb(247, 49, 49);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+}

@@ -7,7 +7,7 @@ import { auth } from '../../firebase-config';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '../../firebase-config'
-import { collection, getDocs, doc, updateDoc} from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, deleteDoc} from 'firebase/firestore'
 
 export default function Home() {
   const [loggedin, setLoggedin] = useState(false);
@@ -25,6 +25,11 @@ export default function Home() {
   }
   const updateEditName = (event) => {
     setEditName(event.target.value);
+  }
+  const deleteTeam = async () => {
+    const teamRef = doc(db, "Team", teams[teamIndex].id);
+    await deleteDoc(teamRef);
+    router.push("/teams");
   }
 
   const saveEdit = async () => {
@@ -123,6 +128,9 @@ export default function Home() {
                     <option value="0">Open</option>
                     <option value="1">Women</option>
                   </select>
+                </div>
+                <div className={styles.center}>
+                  <div className={styles.deleteButton} onClick={deleteTeam}>Delete team</div>
                 </div>
                 <div className={styles.center}>
                   <div className={styles.createButton} onClick={saveEdit}>Save</div>
