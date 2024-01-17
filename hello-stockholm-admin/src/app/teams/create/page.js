@@ -57,6 +57,7 @@ export default function Home() {
         GoalsConcededTotal: 0,
         GroupID: [],
         Division: parseInt(division),
+        gameIDs: [],
       }
 
       await addDoc(teamsCollectionRef, team);

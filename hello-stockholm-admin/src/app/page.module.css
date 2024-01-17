@@ -23,6 +23,13 @@
   padding: 5px;
 }
 
+.center3 {
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 5px;
+}
+
 .centerVert {
 justify-content: center;
 align-items: center;
@@ -81,6 +88,16 @@ margin-right: 5%;
 .deleteButton {
   width: 300px;
   background-color: rgb(247, 49, 49);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+}
+
+.greenButton {
+  width: 300px;
+  background-color: rgb(26, 152, 3);
   padding: 10px;
   border-radius: 10px;
   color: white;

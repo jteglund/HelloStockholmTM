@@ -28,7 +28,7 @@ export default function Home() {
         <main className={styles.main}>
           { loggedin &&
             <div className={styles.centerVert}>
-              <h2>Teams</h2>
+              <h2>Groups</h2>
               <div className={styles.center}>
                 <Link href={"/loggedin"}>
                   <div className={styles.enterButton}>Return to dashboard</div>

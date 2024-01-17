@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase-config';
 import { useRouter } from 'next/navigation';
-
+import Link from 'next/link';
 export default function Home() {
     const [loggedin, setLoggedin] = useState(false);
     const router = useRouter();
@@ -27,8 +27,23 @@ export default function Home() {
         <main className={styles.main}>
           { loggedin &&
             <div className={styles.centerVert}>
-              <h3>Games</h3>
+            <h2>Games</h2>
+            <div className={styles.center}>
+              <Link href={"/loggedin"}>
+                <div className={styles.enterButton}>Return to dashboard</div>
+              </Link>
             </div>
+            <div className={styles.center}>
+              <Link href={"/games/create"}>
+                <div className={styles.enterButton}>Create new game</div>
+              </Link>
+            </div>
+            <div className={styles.center}>
+              <Link href={"/games/edit"}>
+                <div className={styles.enterButton}>Edit game</div>
+              </Link>
+            </div>
+          </div>
           }
         </main>
   )

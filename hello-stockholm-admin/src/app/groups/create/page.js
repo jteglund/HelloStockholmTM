@@ -89,7 +89,7 @@ export default function Home() {
           <div className={styles.centerVert}>
             <h2>Create Group</h2>
             <div className={styles.center}>
-              <Link href={"/group"}>
+              <Link href={"/groups"}>
                 <div className={styles.enterButton}>Go back</div>
               </Link>
             </div>
