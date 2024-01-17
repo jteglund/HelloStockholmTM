@@ -104,3 +104,51 @@ margin-right: 5%;
   cursor: pointer;
   text-align: center;
 }
+
+.game {
+  width: 300px;
+  background-color: rgb(255, 0, 0);
+  padding: 5px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  border-bottom: solid;
+  border-width: thin;
+  border-color: black;
+}
+
+.game:hover {
+  width: 300px;
+  background-color: rgb(166, 98, 98);
+  padding: 5px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  border-bottom: solid;
+  border-width: thin;
+  border-color: black;
+}
+
+.gameReady {
+  width: 300px;
+  background-color: rgb(0, 38, 255);
+  padding: 5px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  border-bottom: solid;
+  border-width: thin;
+  border-color: black;
+}
+
+.gameReady:hover {
+  width: 300px;
+  background-color: rgb(1, 20, 98);
+  padding: 5px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  border-bottom: solid;
+  border-width: thin;
+  border-color: black;
+}

@@ -10,7 +10,7 @@ function checkIfGameExists(listOfGames, gameName){
     return false;
 }
 
-async function getGames(){
+export async function getGames(){
     const gamesCollectionRef = collection(db, "Game");
     const data = await getDocs(gamesCollectionRef);
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
