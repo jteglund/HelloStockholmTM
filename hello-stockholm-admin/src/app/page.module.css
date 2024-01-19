@@ -57,7 +57,25 @@ width: 400px;
   text-align: center;
 }
 
+.enterButton2 {
+  width: 200px;
+  background-color: blueviolet;
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  margin: 10px;
+}
+
 .input {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.inputSmall {
+  width: 40px;
   margin: 10px;
   padding: 10px;
   border-radius: 10px;
@@ -83,6 +101,17 @@ margin-right: 5%;
   color: white;
   cursor: pointer;
   text-align: center;
+}
+
+.createButton2 {
+  width: 300px;
+  background-color: rgb(58, 141, 236);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  margin: 10px;
 }
 
 .deleteButton {

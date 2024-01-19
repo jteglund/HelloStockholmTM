@@ -16,6 +16,12 @@ export async function getGames(){
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
 
+export async function getTeams(){
+    const teamssCollectionRef = collection(db, "Team");
+    const data = await getDocs(teamssCollectionRef);
+    return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+}
+
 export async function createGame(gameName, division){
     //Hämta alla matcher
     const listOfGames = await getGames();
@@ -50,3 +56,121 @@ export async function createGame(gameName, division){
     // -1 = Game exists error
     return -1;
 }
+
+export function convertMinutesToDate(minutes){
+    const originDay = 23;
+    let dayMinute = 1440;
+    let hourMinute = 60;
+    let remainder;
+  
+    let day = Math.floor(minutes/dayMinute) + originDay;
+    remainder = minutes % dayMinute;
+  
+    let hour = Math.floor(remainder/hourMinute);
+    remainder = remainder % hourMinute;
+  
+    let minute = remainder;
+    let hString = hour.toString();
+    if(hour < 10){
+      hString = "0" + hour.toString();
+    }
+  
+    let mString = minute.toString()
+    if(minute < 10){
+      mString = "0" + minute.toString();
+    }
+    return [day.toString(), hString, mString];
+    //return hString + ":" + mString + " - " + day.toString() + " Feb";
+  }
+
+export function convertDateToMinutes(day, hour, minute){
+    const originDay = 23;
+    let days = parseInt(day) - originDay;
+
+    return days*1440 + parseInt(hour)*60 + parseInt(minute);
+}
+
+export async function updateGeneral(id, gameName, division, dateTime, field){
+    const gameRef = doc(db, "Game", id);
+    await updateDoc(gameRef, {
+        GameName: gameName,
+        Division: division,
+        DateTime: dateTime,
+        Field: field,
+    })
+}
+
+export async function setPlaceholderTeamNames(id, team1name, team2name){
+    const gameRef = doc(db, "Game", id);
+    await updateDoc(gameRef, {
+        Team1Name: team1name,
+        Team2Name: team2name,
+        Team1ID: "",
+        Team2ID: "",
+    })
+}
+
+export async function setExistingTeam(gameID, teamname, division, index){
+    if(index < 1 || index > 2){
+        return -1;
+    }
+    let teamsList = await getTeams();
+    let teamIndex = -1;
+    for(let i in teamsList){
+        if(teamsList[i].Name === teamname && teamsList[i].Division === division){
+            teamIndex = i;
+        }
+    }
+    if(teamIndex === -1){
+        return -1;
+    }
+
+    const gameRef = doc(db, "Game", gameID);
+    //TODO: Add gameidto team
+    if(index === 1){
+        await updateDoc(gameRef, {
+            Team1Name: teamsList[teamIndex].Name,
+            Team1ID: teamsList[teamIndex].id
+        })
+    }else if(index === 2){
+        await updateDoc(gameRef, {
+            Team2Name: teamsList[teamIndex].Name,
+            Team2ID: teamsList[teamIndex].id
+        })
+    }
+    return 1;
+}
+
+export async function setNextGame(gameID, gameName, wl, teamIndex){
+    if(wl < 0 || wl > 1){
+        return -1;
+    }
+
+    if(teamIndex < 1 || teamIndex > 2){
+        return -1;
+    }
+
+    let gamesList = await getGames();
+    let gameIndex = -1;
+    for(let i in gamesList){
+        if(gamesList[i].GameName === gameName){
+            gameIndex = i;
+        }
+    }
+    if(gameIndex === -1){
+        return -1;
+    }
+
+    const gameRef = doc(db, "Game", gameID);
+    if(wl === 0){
+        await updateDoc(gameRef, {
+            WNextGame: [gamesList[gameIndex].id, teamIndex]
+        })
+    }else if(wl === 1){
+        await updateDoc(gameRef, {
+            LNextGame: [gamesList[gameIndex].id, teamIndex]
+        })
+    }
+    return 1;
+}
+
