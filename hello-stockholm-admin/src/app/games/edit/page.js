@@ -66,6 +66,11 @@ export default function Home() {
 
     return (
         <main className={styles.main}>
+            <div className={styles.center}>
+              <Link href={"/games"}>
+                <div className={styles.enterButton}>Go back</div>
+              </Link>
+            </div>
           { loggedin && uncompletedGames && completedGames &&
             <div className={styles.centerVert}>
                 <h2>Uncompleted games: </h2>

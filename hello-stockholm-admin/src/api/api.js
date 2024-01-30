@@ -52,8 +52,8 @@ export async function createAndAddGame(gameName, division, team1ID, team2ID, tea
 
         let team1Games = team1.data().gameIDs;
         let team2Games = team2.data().gameIDs;
-        team1Games.push(id);
-        team2Games.push(id);
+        team1Games.push(id.id);
+        team2Games.push(id.id);
 
         await updateDoc(team1Ref, {
             gameIDs: team1Games
@@ -63,7 +63,7 @@ export async function createAndAddGame(gameName, division, team1ID, team2ID, tea
             gameIDs: team2Games
         });
 
-        return id.id;
+        return id;
     }
     // -1 = Game exists error
     return -1;
@@ -79,7 +79,7 @@ export async function generateGroupGames(groupID, groupName, division, teamIDs, 
             if(id === -1){
                 return -1;
             }
-            gameIDs.push(id);
+            gameIDs.push(id.id);
         }
     }
     //Lägg till matchID i gruppobjekt
@@ -98,7 +98,7 @@ function removeGroupFromTeam(teamGroups, groupToRemove){
 
 function removeGameFromTeam(teamGames, gameToRemove){
     return teamGames.filter(function (game) {
-        return game.id != gameToRemove;
+        return game != gameToRemove;
     });
 }
 

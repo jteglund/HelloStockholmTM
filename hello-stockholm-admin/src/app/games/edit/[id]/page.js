@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '../../../firebase-config'
 import { collection, getDoc, doc, updateDoc, deleteDoc} from 'firebase/firestore'
-import { convertDateToMinutes, convertMinutesToDate, setExistingTeam, setNextGame, setPlaceholderTeamNames, updateGeneral } from '@/api/gameAPI';
+import { convertDateToMinutes, convertMinutesToDate, setExistingTeam, setGameReady, setNextGame, setPlaceholderTeamNames, updateGeneral } from '@/api/gameAPI';
 
 export default function Home({params}) {
     const [loggedin, setLoggedin] = useState(false);
@@ -29,8 +29,16 @@ export default function Home({params}) {
     const [nextGameWL, setNGWL] = useState("0")
     const [nextGameName, setNGName] = useState("");
     const [ngError, setNGError] = useState(0);
+    const [ready, setReady] = useState(0);
     const router = useRouter();
 
+    const gameReady = () => {
+      setGameReady(params.id);
+      setRefresh(refresh+1)
+    }
+    const mcStatus = () => {
+      setMenuCode(30);
+    }
     const mcNextGames = () => {
       setMenuCode(20);
     }
@@ -164,11 +172,17 @@ export default function Home({params}) {
         setField(game.Field);
         setTeam1Name(game.Team1Name);
         setTeam2Name(game.Team2Name);
+        setReady(game.Ready);
       }
     }, [game])
 
     return (
         <main className={styles.main}>
+          <div className={styles.center}>
+            <Link href={"/games/edit"}>
+              <div className={styles.enterButton}>Go back</div>
+            </Link>
+          </div>
           { loggedin && game &&
           <>
             <div className={styles.centerVert}>
@@ -209,7 +223,7 @@ export default function Home({params}) {
               <div className={styles.createButton} onClick={mcNextGames}>Next games</div>
             </div>
             <div className={styles.centerVert}>
-              <div className={styles.createButton}>Status</div>
+              <div className={styles.createButton} onClick={mcStatus}>Status</div>
             </div>
             </>
           }
@@ -279,6 +293,12 @@ export default function Home({params}) {
                 <h3>Error linking game</h3>
               }
           </div>
+          }
+          { loggedin && game && menuCode === 30 &&
+            <div className={styles.centerVert}>
+            <div className={styles.enterButton} onClick={gameReady}>Set ready</div>
+              
+            </div>
           }
         </main>
   )

@@ -126,8 +126,21 @@ export async function setExistingTeam(gameID, teamname, division, index){
     }
 
     const gameRef = doc(db, "Game", gameID);
-    //TODO: Add gameidto team
+    //let gameDoc = await getDoc(gameRef);
+    //let game = { ...gameDoc.data(), id: gameDoc.id };
+    const teamRef = doc(db, "Team", teamsList[teamIndex].id)
+    
+
+    let gameIDs = teamsList[teamIndex].gameIDs
+    gameIDs.push(gameID);
+
+    await updateDoc(teamRef, {
+        gameIDs: gameIDs
+    })
+
     if(index === 1){
+        //TODO: ta bort match id från lag om det redan ligger ett lag där
+        
         await updateDoc(gameRef, {
             Team1Name: teamsList[teamIndex].Name,
             Team1ID: teamsList[teamIndex].id
@@ -174,3 +187,9 @@ export async function setNextGame(gameID, gameName, wl, teamIndex){
     return 1;
 }
 
+export async function setGameReady(gameID){
+    const gameRef = doc(db, "Game", gameID)
+    await updateDoc(gameRef, {
+        Ready: 1
+    })
+}
