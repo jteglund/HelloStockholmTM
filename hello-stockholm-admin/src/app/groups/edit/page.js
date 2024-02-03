@@ -7,8 +7,9 @@ import { auth } from '../../firebase-config';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '../../firebase-config'
-import { collection, getDocs, doc, updateDoc, deleteDoc} from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, deleteDoc, getDoc} from 'firebase/firestore'
 import { generateGroupGames, deleteGroup } from '@/api/api';
+import { setAdvancements } from '@/api/groupAPI';
 
 export default function Home() {
   const [loggedin, setLoggedin] = useState(false);
@@ -29,6 +30,42 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState(0);
   const [errorMessage, setErrorMessage] = useState(0);
   const [refresh, setRefresh] = useState(0);
+  const [advFlag, setAdvFlag] = useState(0);
+  const [adv1Id, setAdv1Id] = useState("");
+  const [adv2Id, setAdv2Id] = useState("");
+  const [adv3Id, setAdv3Id] = useState("");
+  const [adv4Id, setAdv4Id] = useState("");
+  const [adv1, setAdv1] = useState("");
+  const [adv2, setAdv2] = useState("");
+  const [adv3, setAdv3] = useState("");
+  const [adv4, setAdv4] = useState("");
+  const [adv1Pos, setAdv1Pos] = useState("1");
+  const [adv2Pos, setAdv2Pos] = useState("1");
+  const [adv3Pos, setAdv3Pos] = useState("1");
+  const [adv4Pos, setAdv4Pos] = useState("1");
+
+  const updateAdv = async () => {
+    let advList = [];
+    let advPosList = [];
+    if(adv1 != ""){
+      advList.push(adv1);
+      advPosList.push(adv1Pos);
+    }
+    if(adv2 != ""){
+      advList.push(adv2);
+      advPosList.push(adv2Pos);
+    }
+    if(adv3 != ""){
+      advList.push(adv3);
+      advPosList.push(adv3Pos);
+    }
+    if(adv4 != ""){
+      advList.push(adv4);
+      advPosList.push(adv4Pos);
+    }
+    await setAdvancements(groups[groupIndex].id, advList, advPosList)
+    setRefresh(refresh+1);
+  }
 
   const generateGames = async () => {
     let res = await generateGroupGames(groups[groupIndex].id, groups[groupIndex].Name, groups[groupIndex].Division, groups[groupIndex].TeamIDs, groups[groupIndex].TeamData, groups[groupIndex].Games);
@@ -120,6 +157,14 @@ export default function Home() {
     }
   }
 
+  const toggleAdvancement = () => {
+    if(advFlag === 0){
+      setAdvFlag(1);
+    }else{
+      setAdvFlag(0);
+    }
+  }
+
   const updateTeamName = (event) => {
     setTeamName(event.target.value);
   }
@@ -152,13 +197,50 @@ export default function Home() {
     router.push("/groups")
   }
 
-  const checkIfGroupExists = () => {
+  const checkIfGroupExists = async () => {
     if(groups){
       for(let i in groups){
         if(groups[i].Name === groupName){
           setGroupIndex(i);
           setEditName(groups[i].Name);
           setEditDivision(groups[i].Division.toString());
+          for(let j in groups[i].NextGame){
+            if(j == 0){
+              setAdv1Id(groups[i].NextGame[j]);
+              let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              setAdv1Pos(groups[i].NextGame[parseInt(j)+1]);
+              let res = await getDoc(gameRef);
+              let game = { ...res.data(), id: res.id };
+              
+              setAdv1(game.GameName);
+            }
+            if(j == 2){
+              setAdv2Id(groups[i].NextGame[j]);
+              let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              setAdv2Pos(groups[i].NextGame[parseInt(j)+1]);
+              let res = await getDoc(gameRef);
+              let game = { ...res.data(), id: res.id };
+              setAdv2(game.GameName);
+            }
+            if(j == 4){
+              setAdv3Id(groups[i].NextGame[j]);
+              let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              
+              setAdv3Pos(groups[i].NextGame[parseInt(j)+1]);
+              let res = await getDoc(gameRef);
+              let game = { ...res.data(), id: res.id };
+              setAdv3(game.GameName);
+            }
+            if(j == 6){
+              setAdv4Id(groups[i].NextGame[j]);
+              let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              
+              setAdv4Pos(groups[i].NextGame[parseInt(j)+1]);
+              let res = await getDoc(gameRef);
+              let game = { ...res.data(), id: res.id };
+              setAdv4(game.GameName);
+            }
+          }
           if(groups[i].Games.length === 0){
             setStarted(0);
           }else{
@@ -236,6 +318,63 @@ export default function Home() {
                 </div>
                 <div className={styles.center} style={{borderBottom: "solid"}}>
                   <div className={styles.createButton} onClick={saveEdit}>Save</div>
+                </div>
+                <div className={styles.center3} style={{borderBottom: "solid"}}>
+                  <div className={styles.createButton} onClick={toggleAdvancement}>Set advancement</div>
+                  { advFlag === 1 &&
+                  <div>
+                    <div className={styles.center}>
+                      <h4>Team 1</h4>
+                      <input value={adv1} onChange={e => setAdv1(e.target.value)} className={styles.input} placeholder='1st placement adv'></input>
+                      <select
+                          value={adv1Pos}
+                          onChange={e => setAdv1Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                      </select>
+                    </div>
+                      <div className={styles.center}>
+                      <h4>Team 2</h4>
+                      <input value={adv2} onChange={e => setAdv2(e.target.value)} className={styles.input} placeholder='2nd placement adv'></input>
+                      <select
+                          value={adv2Pos}
+                          onChange={e => setAdv2Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                      </select>
+                    </div>
+                      <div className={styles.center}>
+                      <h4>Team 3</h4>
+                      <input value={adv3} onChange={e => setAdv3(e.target.value)} className={styles.input} placeholder='3rd placement adv'></input>
+                      <select
+                          value={adv3Pos}
+                          onChange={e => setAdv3Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                      </select>
+                    </div>
+                    <div className={styles.center}>
+                      <h4>Team 4</h4>
+                      <input value={adv4} onChange={e => setAdv4(e.target.value)} className={styles.input} placeholder='4th placement adv'></input>
+                      <select
+                          value={adv4Pos}
+                          onChange={e => setAdv4Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                      </select>
+                    </div>
+                    <div className={styles.enterButton} onClick={updateAdv}>Enter advancements</div>
+
+                    </div>
+                  }
                 </div>
                 <div className={styles.center3}>
                   <div className={styles.createButton} onClick={toggleAddTeam}>Add team</div>

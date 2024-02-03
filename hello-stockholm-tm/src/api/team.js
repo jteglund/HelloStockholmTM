@@ -13,7 +13,7 @@ export async function createTeam(teamsCollectionRef, name, division){
     LossesTotal: 0,
     GoalsScoredTotal: 0,
     GoalsConcededTotal: 0,
-    GroupID: "",
+    GroupID: [],
     Division: division,
   }
 

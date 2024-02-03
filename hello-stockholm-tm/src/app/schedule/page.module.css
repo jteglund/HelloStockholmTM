@@ -323,3 +323,25 @@
     color: white;
     padding: 5px;
 }
+
+.advContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding-top: 10px;
+}
+
+.advText {
+    font-weight: bold;
+    width: 180px;
+}
+
+.advGame {
+    background-color: #fb8a2d;
+    font-weight: bold;
+    width: 60px;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+}

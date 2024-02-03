@@ -8,6 +8,7 @@ import StatusBar from '@/components/game/StatusBar'
 import TeamLeft from '@/components/game/TeamLeft'
 import { convertMinutesToDate } from '@/api/game'
 import InfoBar from '@/components/game/InfoBar'
+import Link from 'next/link'
 
 export default function Home({params}) {
     const docRef = doc(db, "Game", params.id)
@@ -15,6 +16,8 @@ export default function Home({params}) {
     const [time, setTime] = useState("");
     const [day, setDay] = useState("");
     const [division, setDivision] = useState("");
+    const [winnerGame, setWgame] = useState(null);
+    const [loserGame, setLGame] = useState(null);
 
     const dateTimeConverter = (minutes) => {
         let dateTime = convertMinutesToDate(minutes);
@@ -31,6 +34,20 @@ export default function Home({params}) {
     }, [])
 
     useEffect(() => {
+        const getAdv = async (wid, lid) => {
+            if(lid != ""){
+                const lgameRef = doc(db, "Game", lid);
+                const res = await getDoc(lgameRef);
+                let lgame = {...res.data(), id: res.id};
+                setLGame(lgame);
+            }
+            if(wid != ""){
+                const wgameRef = doc(db, "Game", wid);
+                const res2 = await getDoc(wgameRef);
+                let wgame = {...res2.data(), id: res2.id};
+                setWgame(wgame);
+            }
+        }
         if(game){
             dateTimeConverter(game.DateTime);
             if(game.Division === 0){
@@ -38,6 +55,17 @@ export default function Home({params}) {
             }
             if(game.Division === 1){
                 setDivision("Women");
+            }
+            if(game.Type === 1){
+                let wid = "";
+                if(game.WNextGame.length > 0){
+                    wid = game.WNextGame[0];
+                }
+                let lid = "";
+                if(game.LNextGame.length > 0){
+                    lid = game.LNextGame[0];
+                }
+                getAdv(wid, lid)
             }
         }
     }, [game]);
@@ -70,6 +98,26 @@ export default function Home({params}) {
                 <InfoBar prompt={game.GameName} alignment={"center"}/>
                 <InfoBar prompt={division}/>
             </div>
+            { winnerGame &&
+                <div className={styles.advContainer}>
+                    <div className={styles.advText}>Winner advances to: </div>
+                    <Link href={'/game/' + winnerGame.id}>
+                        <div className={styles.advGame} >
+                            <h4>{winnerGame.GameName}</h4>
+                        </div>
+                    </Link>
+                </div>
+            }
+            { loserGame &&
+                <div className={styles.advContainer}>
+                    <div className={styles.advText}>Loser advances to: </div>
+                    <Link href={'/game/' + loserGame.id}>
+                        <div className={styles.advGame} >
+                            <h4 >{loserGame.GameName}</h4>
+                        </div>
+                    </Link>
+                </div>
+            }
         </>
         }
         </main>
