@@ -11,6 +11,7 @@ import FinishGamePopup from '@/components/game/FinishGamePopup'
 import {auth} from '../../../firebase-config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
+import { finishGame } from '@/api/game'
 
 export default function Home({params}) {
     const [gameName, setGameName] = useState(params.gameName)
@@ -96,6 +97,7 @@ export default function Home({params}) {
     }
 
     const handleFinishGame = async () => {
+        await finishGame(game);
         //Sätt status till 2
         const gameRef = doc(db, "Game", game.id);
         await updateDoc(gameRef, {Status: 2});
