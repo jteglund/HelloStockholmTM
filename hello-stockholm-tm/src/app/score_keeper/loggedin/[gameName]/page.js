@@ -90,10 +90,13 @@ export default function Home({params}) {
     }
 
     const handleStartGame = async () => {
-        //Sätt status till 1
-        const gameRef = doc(db, "Game", game.id);
-        await updateDoc(gameRef, {Status: 1});
-        setStatus(1);
+        //Kolla så att matchen har lag!!!
+        if(game.Team1ID != "" && game.Team2ID != ""){
+            //Sätt status till 1
+            const gameRef = doc(db, "Game", game.id);
+            await updateDoc(gameRef, {Status: 1});
+            setStatus(1);
+        }
     }
 
     const handleFinishGame = async () => {
