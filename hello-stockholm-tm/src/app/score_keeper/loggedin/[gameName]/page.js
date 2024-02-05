@@ -23,6 +23,8 @@ export default function Home({params}) {
     const [goal, setGoal] = useState(0);
     const [popup, setPopup] = useState(0);
     const [loggedin, setLoggedin] = useState(false);
+    const [tieError, setTieError] = useState(0);
+
     const router = useRouter();
     useEffect(() => {
         const getGame = async () => {
@@ -100,16 +102,23 @@ export default function Home({params}) {
     }
 
     const handleFinishGame = async () => {
-        await finishGame(game);
-        //Sätt status till 2
-        const gameRef = doc(db, "Game", game.id);
-        await updateDoc(gameRef, {Status: 2});
-        setStatus(2);
-        setPopup(0);
+        if(game.Team1Score != game.Team2Score){
+            await finishGame(game);
+            //Sätt status till 2
+            const gameRef = doc(db, "Game", game.id);
+            await updateDoc(gameRef, {Status: 2});
+            setStatus(2);
+            setPopup(0);
+        }
     }
 
     const openPopup = () => {
-        setPopup(1);
+        if(game.Team1Score != game.Team2Score){
+            setPopup(1);
+            setTieError(0);
+        }else{
+            setTieError(1);
+        }
     }
 
     const closePopup = () => {
@@ -138,6 +147,9 @@ export default function Home({params}) {
                                     <h3 className={styles.TeamText}>{game.Team2Name}</h3>
                                     <ScoreButton prompt={"+"} handlePress={handleAddScore} team={2}/>
                                 </div>
+                                { game && tieError === 1 &&
+                                    <h4>ERROR: You cannot end a game as a tie</h4>
+                                }
                             </>
                             :
                             <StatusButton prompt={"Start game"} handlePress={handleStartGame} status={game.Status}/> 
@@ -148,6 +160,7 @@ export default function Home({params}) {
                 { game && popup === 1 &&
                     <FinishGamePopup game={game} handleReturn={closePopup} handleSave={handleFinishGame}/>
                 }
+                
                 
             </div>
         </main>
