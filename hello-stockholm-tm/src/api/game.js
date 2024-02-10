@@ -1,5 +1,7 @@
-import { collection, getDocs, addDoc, getDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, addDoc, getDoc, updateDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../app/firebase-config";
+import TeamsList from "@/components/TeamsList";
+import { stat } from "fs";
 
 export async function createGame(gamesCollectionRef, team1name, team1id, team2name, team2id, datetime, field, division, gamename){
   let game = 
@@ -208,10 +210,109 @@ async function advanceTeams(game){
   });
 }
 
+async function reCalculateGroup(game){
+  //Ta fram gruppnamn från game.GameName
+  let gamename = game.GameName.replace(/[0-9]/g, '');
+  //Dra ner gruppen
+  const q = query(collection(db, "Group"), where("Name", "==", gamename));
+  const querySnapshot = await getDocs(q);
+  let groupObj = null;
+
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    groupObj = {...doc.data(), id: doc.id}
+  });
+  //Dra ner alla matcher i gruppen
+  let allGames = [];
+  const gamesCollectionRef = collection(db, "Game");
+  const res = await getDocs(gamesCollectionRef);
+  res.forEach((doc) => {
+    allGames.push({...doc.data(), id: doc.id})
+  });
+
+  let groupGames = [];
+  allGames.forEach((game) => {
+    if(groupObj.Games.includes(game.id)){
+      groupGames.push(game);
+    }
+  });
+
+  //Gå igenom alla spelade matcher
+  //Skapa två matriser, en för vinst/förlust (1/-1) och en för gjorda mål
+  let nTeams = groupObj.TeamIDs.length
+  let winMatrix = [];
+  let goalMatrix = [];
+  for(let i = 0; i < nTeams; i++){
+    winMatrix.push(new Array(nTeams).fill(0));
+    goalMatrix.push(new Array(nTeams).fill(0));
+  }
+
+  //Indexet som laget ligger på i Group.TeamIDs är indexet i matriserna
+  //Skapa statistik
+  groupGames.forEach((game) => {
+    if(game.Status == 2){
+      //Hitta team1index och team2index
+      let team1index = groupObj.teamIDs.indexOf(game.Team1ID);
+      let team2index = groupObj.teamIDs.indexOf(game.Team2ID);
+
+      //Räkna ut vem som vann
+      if(game.Team1Score > game.Team2Score){
+        winMatrix[team1index][team2index] = 1;
+        winMatrix[team2index][team1index] = -1;
+
+        goalMatrix[team1index][team2index] = game.Team1Score;
+        goalMatrix[team2index][team1index] = game.Team2Score;
+      }else {
+        winMatrix[team1index][team2index] = -1;
+        winMatrix[team2index][team1index] = 1;
+
+        goalMatrix[team1index][team2index] = game.Team1Score;
+        goalMatrix[team2index][team1index] = game.Team2Score;
+      }
+      };
+    })
+
+  //Skapa lista med statistik i ordning
+  let stats = [];
+  let teamNames = [];
+  //Mappa namn till index
+
+  for(let i = 0; i < nTeams; i++){
+    let gamesPlayed = 0;
+    let gamesWon = 0;
+    let gamesLost = 0;
+    let gd = 0;
+    let points = 0;
+
+    for(let j = 0; j < nTeams; j++){
+      if(winMatrix[i][j] != 0){
+        gamesPlayed += 1;
+      }
+      if(winMatrix[i][j] == 1){
+        gamesWon += 1;
+        points += 3;
+      }
+      if(winMatrix[i][j] == -1){
+        gamesLost += 1;
+      }
+      gd += goalMatrix[i][j];
+      gd -= goalMatrix[j][i];
+    }
+    //TODO: Lägg till lagnamn
+    stats.push(gamesPlayed.toString());
+    stats.push(gamesWon.toString());
+    stats.push(gamesLost.toString());
+    stats.push(gd.toString());
+    stats.push(points.toString());
+  }
+
+  //TODO: Fixa tiebreaks
+}
+
 export async function finishGame(game){
   if(game.Type === 1){
     await advanceTeams(game);
   }else if(game.Type === 0){
-    //await reCalculateGroup();
+    await reCalculateGroup(game);
   }
 }

@@ -112,6 +112,10 @@ export default function Home({params}) {
         }
     }
 
+    const test = () => {
+        finishGame(game);
+    }
+
     const openPopup = () => {
         if(game.Team1Score != game.Team2Score){
             setPopup(1);
@@ -146,6 +150,7 @@ export default function Home({params}) {
                                     <ScoreButton prompt={"-"} handlePress={handleReduceScore} team={2}/>
                                     <h3 className={styles.TeamText}>{game.Team2Name}</h3>
                                     <ScoreButton prompt={"+"} handlePress={handleAddScore} team={2}/>
+                                    <ScoreButton prompt={"test"} handlePress={test} team={2}/>
                                 </div>
                                 { game && tieError === 1 &&
                                     <h4>ERROR: You cannot end a game as a tie</h4>
