@@ -249,6 +249,21 @@ async function reCalculateGroup(game){
 
   //Indexet som laget ligger på i Group.TeamIDs är indexet i matriserna
   //Skapa statistik
+
+  let teamNames = [];
+  for(let i = 0; i < nTeams; i++){
+    for(let j = 0; j < groupGames.length; j++){
+      if(groupGames[j].Team1ID == group.TeamIDs[i]){
+        teamNames.push(groupGames[j].Team1Name);
+        break;
+      }
+      if(groupGames[j].Team2ID == group.TeamIDs[i]){
+        teamNames.push(groupGames[j].Team2Name);
+        break;
+      }
+    }
+  }
+
   groupGames.forEach((game) => {
     if(game.Status == 2){
       //Hitta team1index och team2index
@@ -274,7 +289,6 @@ async function reCalculateGroup(game){
 
   //Skapa lista med statistik i ordning
   let stats = [];
-  let teamNames = [];
   //Mappa namn till index
 
   for(let i = 0; i < nTeams; i++){
@@ -298,7 +312,7 @@ async function reCalculateGroup(game){
       gd += goalMatrix[i][j];
       gd -= goalMatrix[j][i];
     }
-    //TODO: Lägg till lagnamn
+    stats.push(teamNames[i]);
     stats.push(gamesPlayed.toString());
     stats.push(gamesWon.toString());
     stats.push(gamesLost.toString());
@@ -307,12 +321,271 @@ async function reCalculateGroup(game){
   }
 
   //TODO: Fixa tiebreaks
+  let indexToPoints = [[0, parseInt(stats[5])]];
+  //Gå igenom poäng
+  for(let i = 1; i < nTeams; i++){
+    let points = parseInt(stats[(i*6)+5]);
+    indexToPoints.push([i, points]);
+  }
+  indexToPoints.sort((a, b) => {return -1*(a[1]-b[1])})
+
+  let subGroups = [];
+  let subGroup = [indexToPoints[0][0]];
+  let prev = indexToPoints[0][1];
+  for(let i = 1; i < indexToPoints.length; i++){
+    if(prev != indexToPoints[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToPoints[i][0]];
+      prev = indexToPoints[i][1];
+    }else{
+      subGroup.push(indexToPoints[i][0]);
+      prev = indexToPoints[i][1];
+    }
+  }
+  subGroups.push(subGroup);
+
+  //Kolla längden på subGroup i subGroups
+  let finalTeamIndices = [];
+  for(let i = 0; i < subGroups.length; i++){
+    if(subGroups[i].length > 1){
+      let listOfBrokenTies = breakTies(subGroups[i], winMatrix, goalMatrix);
+      for(j = 0; j < listOfBrokenTies.length; j++){
+        finalTeamIndices.push(listOfBrokenTies[j]);
+      }
+    }else{
+      finalTeamIndices.push(subGroups[i][0]);
+    }
+  }
+
+  let newTeamData = [];
+  for(let i = 0; i < finalTeamIndices.length; i++){
+    for(let j = 0; j < 6; j++){
+      newTeamData.push(stats[((finalTeamIndices[i]*6)+j)])
+    }
+  }
+
+  const groupRef = doc(db, "Group", groupObj.id)
+  await updateDoc(groupRef, {
+    TeamData: newTeamData
+  })
+}
+
+function breakWon(indexList, winMatrix){
+  let indexToWonGames = [];
+  for(let i = 0; i < indexList.length; i++){
+    let wg = 0;
+    for(let j = 0; j < indexList.length; j++){
+      if(winMatrix[indexList[i]][indexList[j]] == 1){
+        wg += 1;
+      }
+    }
+    indexToWonGames.push([indexList[i], wg]);
+  }
+  indexToWonGames.sort((a, b) => {return -1*(a[1] - b[1])});
+
+  let subGroups = [];
+  let subGroup = [indexToWonGames[0][0]];
+  let prev = indexToWonGames[0][1];
+  for(let i = 1; i < indexToWonGames.length; i++){
+    if(prev != indexToWonGames[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToWonGames[i][0]];
+      prev = indexToWonGames[i][1];
+    }else{
+      subGroup.push(indexToWonGames[i][0]);
+      prev = indexToWonGames[i][1];
+    }
+  }
+  subGroups.push(subGroup); 
+  return subGroups;
+}
+
+function breakGS1(indexList, goalMatrix){
+  let indexToGD = []
+  for(let i = 0; i < indexList.length; i++){
+    let gd = 0;
+    for(let j = 0; j < indexList.length; j++){
+      gd += (goalMatrix[indexList[i]][indexList[j]])
+    }
+    indexToGD.push([indexList[i], gd])
+  }
+
+  indexToGD.sort((a, b) => {return -1*(a[1] - b[1])}); 
+  let subGroups = [];
+  let subGroup = [indexToGD[0][0]];
+  let prev = indexToGD[0][1];
+  for(let i = 1; i < indexToGD.length; i++){
+    if(prev != indexToGD[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToGD[i][0]];
+      prev = indexToGD[i][1];
+    }else{
+      subGroup.push(indexToGD[i][0]);
+      prev = indexToGD[i][1];
+    }
+  } 
+  subGroups.push(subGroup);
+  return subGroups;
+}
+
+function breakGS2(indexList, goalMatrix){
+  let indexToGD = [];
+  for(let i = 0; i < indexList.length; i++){
+    let gd = 0;
+    for(let j = 0; j < goalMatrix.length; j++){
+      gd += (goalMatrix[indexList[i]][j])
+    }
+    indexToGD.push([indexList[i], gd])
+  }
+
+  
+  indexToGD.sort((a, b) => {return -1*(a[1] - b[1])}); 
+  let subGroups = [];
+  let subGroup = [indexToGD[0][0]];
+  let prev = indexToGD[0][1];
+  for(let i = 1; i < indexToGD.length; i++){
+    if(prev != indexToGD[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToGD[i][0]];
+      prev = indexToGD[i][1];
+    }else{
+      subGroup.push(indexToGD[i][0]);
+      prev = indexToGD[i][1];
+    }
+  } 
+  subGroups.push(subGroup);
+  return subGroups;
+}
+
+function breakGD2(indexList, goalMatrix){
+  let indexToGD = [];
+  for(let i = 0; i < indexList.length; i++){
+    let gd = 0;
+    for(let j = 0; j < goalMatrix.length; j++){
+      gd += (goalMatrix[indexList[i]][j]-goalMatrix[j][indexList[i]])
+    }
+    indexToGD.push([indexList[i], gd])
+  }
+
+  
+  indexToGD.sort((a, b) => {return -1*(a[1] - b[1])}); 
+  let subGroups = [];
+  let subGroup = [indexToGD[0][0]];
+  let prev = indexToGD[0][1];
+  for(let i = 1; i < indexToGD.length; i++){
+    if(prev != indexToGD[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToGD[i][0]];
+      prev = indexToGD[i][1];
+    }else{
+      subGroup.push(indexToGD[i][0]);
+      prev = indexToGD[i][1];
+    }
+  } 
+  subGroups.push(subGroup);
+  return subGroups; 
+}
+
+function breakGD1(indexList, goalMatrix){
+  let indexToGD = []
+  for(let i = 0; i < indexList.length; i++){
+    let gd = 0;
+    for(let j = 0; j < indexList.length; j++){
+      gd += (goalMatrix[indexList[i]][indexList[j]]-goalMatrix[indexList[j]][indexList[i]])
+    }
+    indexToGD.push([indexList[i], gd])
+  }
+
+  indexToGD.sort((a, b) => {return -1*(a[1] - b[1])}); 
+  let subGroups = [];
+  let subGroup = [indexToGD[0][0]];
+  let prev = indexToGD[0][1];
+  for(let i = 1; i < indexToGD.length; i++){
+    if(prev != indexToGD[i][1]){
+      subGroups.push(subGroup);
+      subGroup = [indexToGD[i][0]];
+      prev = indexToGD[i][1];
+    }else{
+      subGroup.push(indexToGD[i][0]);
+      prev = indexToGD[i][1];
+    }
+  } 
+  subGroups.push(subGroup);
+  return subGroups;
+}
+
+function breakTies(indexList, winMatrix, goalMatrix){
+  //Antal vunna matcher -> Inbördes
+  //Målskillnad -> Inbördes
+  let newList = breakWon(indexList, winMatrix);
+  let winBreak = [];
+  for(let i = 0; i < newList.length; i++){
+    if(newList[i].length > 1){
+      let gdBroken = breakGD1(newList[i], goalMatrix);
+      for(let j = 0; j < gdBroken.length; j++){
+        winBreak.push(gdBroken[j]);
+      }
+    }else{
+      winBreak.push(newList[i]);
+    }
+  };
+  //Målskillnad alla matcher
+  let winBreak2 = [];
+  for(let i = 0; i < winBreak.length; i++){
+    if(winBreak[i].length > 1){
+      let tmp = breakGD2(winBreak[i], goalMatrix);
+      for(let j = 0; j < tmp.length; j++){
+        winBreak2.push(tmp[j]);
+      }
+    }else{
+      winBreak2.push(winBreak[i]);
+    }
+  }
+  
+  //Gjorda mål -> Inbördes
+  let winBreak3 = [];
+  for(let i = 0; i < winBreak2.length; i++){
+    if(winBreak2[i].length > 1){
+      let tmp = breakGS1(winBreak2[i], goalMatrix);
+      for(let j = 0; j < tmp.length; j++){
+        winBreak3.push(tmp[j]);
+      }
+    }else{
+      winBreak3.push(winBreak[i]);
+    }
+  }
+  //Gjorda mål alla matcher
+  let winBreak4 = [];
+  for(let i = 0; i < winBreak3.length; i++){
+    if(winBreak3[i].length > 1){
+      let tmp = breakGS2(winBreak3[i], goalMatrix);
+      for(let j = 0; j < tmp.length; j++){
+        winBreak4.push(tmp[j]);
+      }
+    }else{
+      winBreak4.push(winBreak[i]);
+    }
+  }
+
+  let finalTeamPlacement = [];
+  for(let i = 0; i < winBreak4.length; i++){
+    if(winBreak4[i].length > 1){
+      for(let j = 0; j < winBreak4[i].length; j++){
+        finalTeamPlacement.push(winBreak4[i][j])
+      }
+    }else{
+      finalTeamPlacement.push(winBreak4[i][0])
+    }
+  }
+
+  return finalTeamPlacement;
 }
 
 export async function finishGame(game){
   if(game.Type === 1){
     await advanceTeams(game);
   }else if(game.Type === 0){
+    //TODO: Avsluta matchen först
     await reCalculateGroup(game);
   }
 }
