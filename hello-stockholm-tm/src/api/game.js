@@ -585,7 +585,6 @@ export async function finishGame(game){
   if(game.Type === 1){
     await advanceTeams(game);
   }else if(game.Type === 0){
-    //TODO: Avsluta matchen först
     await reCalculateGroup(game);
   }
 }

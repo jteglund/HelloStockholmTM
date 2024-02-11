@@ -103,10 +103,10 @@ export default function Home({params}) {
 
     const handleFinishGame = async () => {
         if(game.Team1Score != game.Team2Score){
-            await finishGame(game);
-            //Sätt status till 2
+            //TODO: KAN GE ERROR FÖR BRACKET MATCHEr
             const gameRef = doc(db, "Game", game.id);
             await updateDoc(gameRef, {Status: 2});
+            await finishGame(game);
             setStatus(2);
             setPopup(0);
         }
