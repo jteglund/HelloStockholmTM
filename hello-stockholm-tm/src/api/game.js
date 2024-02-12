@@ -1,7 +1,7 @@
 import { collection, getDocs, addDoc, getDoc, updateDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../app/firebase-config";
 import TeamsList from "@/components/TeamsList";
-import { stat } from "fs";
+
 
 export async function createGame(gamesCollectionRef, team1name, team1id, team2name, team2id, datetime, field, division, gamename){
   let game = 
@@ -253,11 +253,11 @@ async function reCalculateGroup(game){
   let teamNames = [];
   for(let i = 0; i < nTeams; i++){
     for(let j = 0; j < groupGames.length; j++){
-      if(groupGames[j].Team1ID == group.TeamIDs[i]){
+      if(groupGames[j].Team1ID == groupObj.TeamIDs[i]){
         teamNames.push(groupGames[j].Team1Name);
         break;
       }
-      if(groupGames[j].Team2ID == group.TeamIDs[i]){
+      if(groupGames[j].Team2ID == groupObj.TeamIDs[i]){
         teamNames.push(groupGames[j].Team2Name);
         break;
       }
@@ -267,8 +267,8 @@ async function reCalculateGroup(game){
   groupGames.forEach((game) => {
     if(game.Status == 2){
       //Hitta team1index och team2index
-      let team1index = groupObj.teamIDs.indexOf(game.Team1ID);
-      let team2index = groupObj.teamIDs.indexOf(game.Team2ID);
+      let team1index = groupObj.TeamIDs.indexOf(game.Team1ID);
+      let team2index = groupObj.TeamIDs.indexOf(game.Team2ID);
 
       //Räkna ut vem som vann
       if(game.Team1Score > game.Team2Score){
@@ -349,7 +349,7 @@ async function reCalculateGroup(game){
   for(let i = 0; i < subGroups.length; i++){
     if(subGroups[i].length > 1){
       let listOfBrokenTies = breakTies(subGroups[i], winMatrix, goalMatrix);
-      for(j = 0; j < listOfBrokenTies.length; j++){
+      for(let j = 0; j < listOfBrokenTies.length; j++){
         finalTeamIndices.push(listOfBrokenTies[j]);
       }
     }else{
@@ -551,7 +551,7 @@ function breakTies(indexList, winMatrix, goalMatrix){
         winBreak3.push(tmp[j]);
       }
     }else{
-      winBreak3.push(winBreak[i]);
+      winBreak3.push(winBreak2[i]);
     }
   }
   //Gjorda mål alla matcher
@@ -563,7 +563,7 @@ function breakTies(indexList, winMatrix, goalMatrix){
         winBreak4.push(tmp[j]);
       }
     }else{
-      winBreak4.push(winBreak[i]);
+      winBreak4.push(winBreak3[i]);
     }
   }
 
