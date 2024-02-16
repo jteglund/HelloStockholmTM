@@ -58,6 +58,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: right;
     position: relative;
     width: 150px;
 }
@@ -81,6 +82,13 @@
     padding: 10px;
     color: white;
     font-weight: bold;
+}
+
+.textGD {
+    padding: 10px;
+    color: white;
+    font-weight: bold;
+    width: 50px;
 }
 
 .GroupListItem {

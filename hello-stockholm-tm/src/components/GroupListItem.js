@@ -38,7 +38,7 @@ function GroupTeamItem({team, bottom, linkTeams}) {
                             <div className={styles.text}>{team.Games}</div>
                             <div className={styles.text}>{team.Wins}</div>
                             <div className={styles.text}>{team.Losses}</div>
-                            <div className={styles.text}>{team.PD}</div>
+                            <div className={styles.textGD}>{team.PD}</div>
                         </div>
                         <div className={!bottom ? styles.GroupPtsContainer : styles.GroupPtsContainerBottom}>
                             <div className={styles.text}>
@@ -57,7 +57,7 @@ function GroupTeamItem({team, bottom, linkTeams}) {
                     <div className={styles.text}>{team.Games}</div>
                     <div className={styles.text}>{team.Wins}</div>
                     <div className={styles.text}>{team.Losses}</div>
-                    <div className={styles.text}>{team.PD}</div>
+                    <div className={styles.textGD}>{team.PD}</div>
                 </div>
                 <div className={!bottom ? styles.GroupPtsContainer : styles.GroupPtsContainerBottom}>
                     <div className={styles.text}>

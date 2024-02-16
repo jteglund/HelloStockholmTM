@@ -316,6 +316,7 @@ async function reCalculateGroup(game){
     stats.push(gamesPlayed.toString());
     stats.push(gamesWon.toString());
     stats.push(gamesLost.toString());
+    //TODO Lägg till plus+
     stats.push(gd.toString());
     stats.push(points.toString());
   }
