@@ -316,12 +316,15 @@ async function reCalculateGroup(game){
     stats.push(gamesPlayed.toString());
     stats.push(gamesWon.toString());
     stats.push(gamesLost.toString());
-    //TODO Lägg till plus+
-    stats.push(gd.toString());
+    
+    if(gd >= 0){
+      stats.push("+".concat(gd.toString()))
+    }else{
+      stats.push(gd.toString());
+    }
     stats.push(points.toString());
   }
 
-  //TODO: Fixa tiebreaks
   let indexToPoints = [[0, parseInt(stats[5])]];
   //Gå igenom poäng
   for(let i = 1; i < nTeams; i++){
