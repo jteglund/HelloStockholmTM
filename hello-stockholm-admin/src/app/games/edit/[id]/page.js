@@ -282,9 +282,10 @@ export default function Home({params}) {
                   >
                   <option value="1">Team 1</option>
                   <option value="2">Team 2</option>
+                  <option value="3">Group</option>
             </select>
             <div className={styles.center}>
-              <h4>Game</h4>
+              <h4>Game/Group</h4>
               <input className={styles.input} placeholder='Game name' value={nextGameName} onChange={updateNGName}></input>
               
             </div>

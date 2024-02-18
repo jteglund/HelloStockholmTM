@@ -16,6 +16,12 @@ async function getGames(){
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
 
+export async function getGroups(){
+    const groupCollectionRef = collection(db, "Group");
+    const data = await getDocs(groupCollectionRef);
+    return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+}
+
 export async function createAndAddGame(gameName, division, team1ID, team2ID, team1Name, team2Name){
     //Hämta alla matcher
     const listOfGames = await getGames();
@@ -69,7 +75,67 @@ export async function createAndAddGame(gameName, division, team1ID, team2ID, tea
     return -1;
 }
 
+async function createTemplateGame(gameName, division, team1Name, team2Name){
+    //Hämta alla matcher
+    const listOfGames = await getGames();
+
+    //Kolla om gameName finns
+    let gameExists = checkIfGameExists(listOfGames, gameName);
+    //Lägg till dokument
+    if(!gameExists){
+        const gamesCollectionRef = collection(db, "Game");
+        let game = {
+            DateTime: 0,
+            Division: division,
+            Field: "Field X",
+            GameName: gameName,
+            LNextGame: [],
+            Status: 0,
+            Team1ID: "",
+            Team1Name: team1Name,
+            Team2ID: "",
+            Team1Score: 0,
+            Team2Name: team2Name,
+            Team2Score: 0,
+            WNextGame: [],
+            Type: 0,
+            Ready: 0
+        }
+         
+        //Lägg till matchID i lagobjekt
+        let id = await addDoc(gamesCollectionRef, game)
+
+        return id;
+    }
+    // -1 = Game exists error
+    return -1;
+}
+
+async function generateTemplateGroupGames(groupID, groupName, division, teamData, groupGames){
+    let gameIDs = [];
+    let count = 1;
+    for(let i = 0; i < teamData.length/6; i++){
+        for(let j = i+1; j < teamData.length/6; j++){
+            let id = await createTemplateGame(groupName+((count).toString()), division, teamData[i*6], teamData[j*6]); 
+            count++;
+            if(id === -1){
+                return -1;
+            }
+            gameIDs.push(id.id);
+        }
+    }
+    //Lägg till matchID i gruppobjekt
+    const groupRef = doc(db, "Group", groupID);
+    await updateDoc(groupRef, {
+        Games: groupGames.concat(gameIDs)
+    });
+    return 1;
+}
+
 export async function generateGroupGames(groupID, groupName, division, teamIDs, teamData, groupGames){
+    if(teamIDs.length == 0){
+        return generateTemplateGroupGames(groupID, groupName, division, teamData, groupGames);
+    }
     let gameIDs = [];
     let count = 1;
     for(let i = 0; i < teamIDs.length-1; i++){

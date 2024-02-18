@@ -10,6 +10,7 @@ import { db } from '../../firebase-config'
 import { collection, getDocs, doc, updateDoc, deleteDoc, getDoc} from 'firebase/firestore'
 import { generateGroupGames, deleteGroup } from '@/api/api';
 import { setAdvancements } from '@/api/groupAPI';
+import { tree } from 'next/dist/build/templates/app-page';
 
 export default function Home() {
   const [loggedin, setLoggedin] = useState(false);
@@ -35,14 +36,20 @@ export default function Home() {
   const [adv2Id, setAdv2Id] = useState("");
   const [adv3Id, setAdv3Id] = useState("");
   const [adv4Id, setAdv4Id] = useState("");
+  const [adv5Id, setAdv5Id] = useState("");
+  const [adv6Id, setAdv6Id] = useState("");
   const [adv1, setAdv1] = useState("");
   const [adv2, setAdv2] = useState("");
   const [adv3, setAdv3] = useState("");
   const [adv4, setAdv4] = useState("");
+  const [adv5, setAdv5] = useState("");
+  const [adv6, setAdv6] = useState("");
   const [adv1Pos, setAdv1Pos] = useState("1");
   const [adv2Pos, setAdv2Pos] = useState("1");
   const [adv3Pos, setAdv3Pos] = useState("1");
   const [adv4Pos, setAdv4Pos] = useState("1");
+  const [adv5Pos, setAdv5Pos] = useState("1");
+  const [adv6Pos, setAdv6Pos] = useState("1");
 
   const updateAdv = async () => {
     let advList = [];
@@ -62,6 +69,14 @@ export default function Home() {
     if(adv4 != ""){
       advList.push(adv4);
       advPosList.push(adv4Pos);
+    }
+    if(adv5 != ""){
+      advList.push(adv5);
+      advPosList.push(adv5Pos);
+    }
+    if(adv6 != ""){
+      advList.push(adv6);
+      advPosList.push(adv6Pos);
     }
     await setAdvancements(groups[groupIndex].id, advList, advPosList)
     setRefresh(refresh+1);
@@ -127,6 +142,23 @@ export default function Home() {
       setErrorMessage(0); 
       setRefresh(refresh+1);
       return true;
+    }else{
+       //Generate team data
+       let teamData = [teamName, "0", "0", "0", "0", "0"];
+       let oldTeamData = groups[groupIndex].TeamData;
+       
+       let newTeamData = oldTeamData.concat(teamData);
+ 
+       //Add to db
+       const groupRef = doc(db, "Group", groups[groupIndex].id);
+       await updateDoc(groupRef, {
+         TeamData: newTeamData,
+       });
+       
+       setSuccessMessage(1);
+       setErrorMessage(0); 
+       setRefresh(refresh+1);
+       return true;
     }
     setSuccessMessage(0);
     setErrorMessage(1);
@@ -149,7 +181,137 @@ export default function Home() {
     }
   }
 
-  const toggleFinishGroup = () =>{
+  const toggleFinishGroup = async () =>{
+    //Kolla så alla matcher är avslutade
+    let group = groups[groupIndex];
+    let gameIDs = group.Games; 
+
+    for(let i = 0; i < gameIDs.length; i++){
+      //Hämta hem match
+      let gameRef = doc(db, "Game", gameIDs[i]);
+      let res = await getDoc(gameRef);
+      let game = {...res.data(), id:res.id}
+
+      //Kolla status
+      if(game.Status != 2){
+        console.log("Not all games are finished");
+        return -1;
+      }
+    }
+
+    //Skicka lag vidare till match/grupp
+      //Matcha lagID till namn i teamData
+    let teamData = group.TeamData;
+    let teamIDs = group.TeamIDs;
+    let teams = [];
+    
+    for(let i = 0; i < teamIDs.length; i++){
+      let teamRef = doc(db, "Team", teamIDs[i]);
+      let res = await getDoc(teamRef);
+      teams.push({...res.data(), id:res.id});
+    }
+
+    let teamIDToPos = [];
+    for(let i = 0; i < teamData.length/6; i++){
+      for(let j = 0; j < teams.length; j++){
+        if(teamData[i*6] == teams[j].Name){
+          teamIDToPos.push(teams[j].id);
+        }
+      }
+    }
+
+    for(let i = 0; i < group.NextGame.length/2; i++){
+      //Om det grupp
+      if(group.NextGame[(i*2)+1] == "3"){
+          //Lägg till lagID i grupp
+          let advGroupID = group.NextGame[(i*2)];
+          let groupRef = doc(db, "Group", advGroupID);
+          let res = await getDoc(groupRef);
+          let advGroup = {...res.data(), id:res.id}
+          let advTeamIDs = advGroup.TeamIDs;
+          let advTeamData = advGroup.TeamData;
+          advTeamIDs.push(teamIDToPos[i]);
+
+          //Byt ut rätt placeholdernamn i grupp
+          let placeholderName = group.Name + (i+1).toString();
+          for(let j = 0;  j < advTeamData.length/6; j++){
+            if(placeholderName == advTeamData[j*6]){
+              advTeamData[j*6] = group.TeamData[i*6];
+            }
+          }
+
+          await updateDoc(groupRef, {
+            TeamIDs: advTeamIDs,
+            TeamData: advTeamData
+          })
+          let gIDs = [] 
+          for(let j = 0; j < advGroup.Games.length; j++){
+            let gameRef = doc(db, "Game", advGroup.Games[i]);
+            let res2 = getDoc(gameRef);
+            let game = {...res2.data(), id:res2.id}
+            if(game.Team1Name == placeholderName){
+              //Byt ut placeholdernamn och id i match
+              await updateDoc(gameRef, {
+                Team1Name: group.TeamData[i*6],
+                Team1ID: teamIDToPos[i]
+              });
+              //Lägg till matchID i lag
+              gIDs.push(advGroup.Games[i]);
+
+            }else if(game.Team2Name == placeholderName){
+              //Byt ut placeholdernamn och id i match
+              await updateDoc(gameRef, {
+                Team2Name: group.TeamData[i*6],
+                Team2ID: teamIDToPos[i]
+              });
+              //Lägg till matchID i lag
+              gIDs.push(advGroup.Games[i]);
+            }
+          }
+          let tRef = doc(db, "Team", teamIDToPos[i]);
+          let res3 = getDoc(tRef);
+          let t = {...res3.data(), id:res3.id}
+          let gIDsOld = t.gameIDs;
+          let gIDsNew = gIDsOld.concat(gIDs);
+          let tgroupIDs = t.GroupID;
+          let newTGroupIDs = tgroupIDs.concat([advGroupID])
+          await updateDoc(tRef, {
+            gameIDs: gIDsNew,
+            GroupID: newTGroupIDs
+          });
+
+      }else{
+        //Om det match
+        let gameRef = doc(db, "Game", group.NextGame[i*2]);
+
+        //Lägg till lagID och namn i match på rätt index
+        if(group.NextGame[(i*2)+1] == 1){
+          await updateDoc(gameRef, {
+            Team1Name: group.TeamData[i*6],
+            Team1ID: teamIDToPos[i]
+          });
+        }else if(group.NextGame[(i*2)+1] == 2){
+          await updateDoc(gameRef, {
+            Team2Name: group.TeamData[i*6],
+            Team2ID: teamIDToPos[i]
+          });
+        }
+        
+        //Lägg till matchID i lag
+        let tRef = doc(db, "Team", teamIDToPos[i]);
+        let tRes2 = await getDoc(tRef);
+        let te = {...tRes2.data(), id:tRes2.id};
+        let gameList = te.gameIDs;
+        gameList.push(group.NextGame[i*2]);
+        await updateDoc(tRef, {
+          gameIDs: gameList
+        })
+      }
+    }
+    
+
+    
+
     if (finishGroupFlag === 0){
       setFinishGroupFlag(1);
     }else{
@@ -239,6 +401,44 @@ export default function Home() {
               let res = await getDoc(gameRef);
               let game = { ...res.data(), id: res.id };
               setAdv4(game.GameName);
+            }
+            if(j == 8){
+              setAdv5Id(groups[i].NextGame[j]);
+              
+              if(groups[i].NextGame[parseInt(j)+1] == 3){
+                let groupRef = doc(db, "Group", groups[i].NextGame[j]);
+              
+                setAdv5Pos(groups[i].NextGame[parseInt(j)+1]);
+                let res = await getDoc(groupRef);
+                let group = { ...res.data(), id: res.id };
+                setAdv5(group.Name);
+              }else{
+                let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              
+                setAdv5Pos(groups[i].NextGame[parseInt(j)+1]);
+                let res = await getDoc(gameRef);
+                let game = { ...res.data(), id: res.id };
+                setAdv5(game.GameName);
+              }
+            }
+            if(j == 10){
+              setAdv6Id(groups[i].NextGame[j]);
+              
+              if(groups[i].NextGame[parseInt(j)+1] == 3){
+                let groupRef = doc(db, "Group", groups[i].NextGame[j]);
+              
+                setAdv6Pos(groups[i].NextGame[parseInt(j)+1]);
+                let res = await getDoc(groupRef);
+                let group = { ...res.data(), id: res.id };
+                setAdv6(group.Name);
+              }else{
+                let gameRef = doc(db, "Game", groups[i].NextGame[j]);
+              
+                setAdv6Pos(groups[i].NextGame[parseInt(j)+1]);
+                let res = await getDoc(gameRef);
+                let game = { ...res.data(), id: res.id };
+                setAdv6(game.GameName);
+              }
             }
           }
           if(groups[i].Games.length === 0){
@@ -371,6 +571,34 @@ export default function Home() {
                         <option value="2">2</option>
                       </select>
                     </div>
+
+                    <div className={styles.center}>
+                      <h4>Team 5</h4>
+                      <input value={adv5} onChange={e => setAdv5(e.target.value)} className={styles.input} placeholder='5th placement adv'></input>
+                      <select
+                          value={adv5Pos}
+                          onChange={e => setAdv5Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">Group</option>
+                      </select>
+                    </div>
+
+                    <div className={styles.center}>
+                      <h4>Team 6</h4>
+                      <input value={adv6} onChange={e => setAdv6(e.target.value)} className={styles.input} placeholder='6th placement adv'></input>
+                      <select
+                          value={adv6Pos}
+                          onChange={e => setAdv6Pos(e.target.value)}
+                          className={styles.select}
+                        >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">Group</option>
+                      </select>
+                    </div>
                     <div className={styles.enterButton} onClick={updateAdv}>Enter advancements</div>
 
                     </div>
@@ -415,11 +643,12 @@ export default function Home() {
                         <div className={styles.enterButton} onClick={generateGames}>Are you sure?</div>
                       </div>
                     }
-                  <div className={styles.center}>
-                    <div className={styles.createButton} onClick={toggleFinishGroup}>Finish group</div>
-                  </div>
+                  
                 </>
                 }
+                <div className={styles.center}>
+                    <div className={styles.createButton} onClick={toggleFinishGroup}>Finish group</div>
+                </div>
               </>
             }
           </div>

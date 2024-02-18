@@ -1,5 +1,6 @@
 import {db} from '../app/firebase-config'
 import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore'
+import { getGroups } from './api';
 
 function checkIfGameExists(listOfGames, gameName){
     for(let i in listOfGames){
@@ -159,29 +160,45 @@ export async function setNextGame(gameID, gameName, wl, teamIndex){
         return -1;
     }
 
-    if(teamIndex < 1 || teamIndex > 2){
+    if(teamIndex < 1 || teamIndex > 3){
         return -1;
     }
-
-    let gamesList = await getGames();
-    let gameIndex = -1;
-    for(let i in gamesList){
-        if(gamesList[i].GameName === gameName){
-            gameIndex = i;
+    
+    let id = "";
+    if(teamIndex == 3){
+        let groupList = await getGroups();
+        let groupIndex = -1;
+        for(let i in groupList){
+            if(groupList[i].Name === gameName){
+                groupIndex = i;
+            }
         }
-    }
-    if(gameIndex === -1){
-        return -1;
+        if(groupIndex === -1){
+            return -1;
+        }
+        id = groupList[groupIndex].id;
+    }else{
+        let gamesList = await getGames();
+        let gameIndex = -1;
+        for(let i in gamesList){
+            if(gamesList[i].GameName === gameName){
+                gameIndex = i;
+            }
+        }
+        if(gameIndex === -1){
+            return -1;
+        }
+        id = gamesList[gameIndex].id;
     }
 
     const gameRef = doc(db, "Game", gameID);
     if(wl === 0){
         await updateDoc(gameRef, {
-            WNextGame: [gamesList[gameIndex].id, teamIndex]
+            WNextGame: [id, teamIndex]
         })
     }else if(wl === 1){
         await updateDoc(gameRef, {
-            LNextGame: [gamesList[gameIndex].id, teamIndex]
+            LNextGame: [id, teamIndex]
         })
     }
     return 1;

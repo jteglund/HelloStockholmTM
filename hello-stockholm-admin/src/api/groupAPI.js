@@ -7,16 +7,29 @@ export async function setAdvancements(groupId, advNames, advPos){
     const gamesRef = collection(db, "Game");
     const data = await getDocs(gamesRef);
     let games = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+    const groupRe = collection(db, "Group");
+    const data2 = await getDocs(groupRe);
+    let groups = data2.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
     //kolla så alla namn finns
     let check = true;
     for(let i in advNames){
         let innerCheck = false
-        for(let j in games){
-            if(advNames[i] === games[j].GameName){
-                innerCheck = true
-                adv.push(games[j].id);
-                break;
+        if(advPos[i] == 3){
+            for(let j in groups){
+                if(advNames[i] === groups[j].Name){
+                    innerCheck = true
+                    adv.push(groups[j].id);
+                    break;
+                }
+            }
+        }else{
+            for(let j in games){
+                if(advNames[i] === games[j].GameName){
+                    innerCheck = true
+                    adv.push(games[j].id);
+                    break;
+                }
             }
         }
         check = check && innerCheck
