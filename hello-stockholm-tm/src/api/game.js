@@ -368,8 +368,8 @@ async function reCalculateGroup(game){
     }
   }
   let newTeamIDs = [];
-  for(let i = 0; i < newTeamData.length; i++){
-    for(let j = 0; j < teamNames.length/6; j++){
+  for(let i = 0; i < newTeamData.length/6; i++){
+    for(let j = 0; j < teamNames.length; j++){
       if(teamNames[j] == newTeamData[i*6]){
         newTeamIDs.push(groupObj.TeamIDs[j]);
         break;

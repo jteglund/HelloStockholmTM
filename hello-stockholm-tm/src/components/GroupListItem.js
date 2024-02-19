@@ -136,7 +136,7 @@ export default function GroupListItem({group, groupsPage}) {
                     <GroupTopItem group={group} />
                     {teamList.map((team) => <GroupTeamItem key={team.key} team={team} linkTeams={true}/>)}
                     { lastTeam != null
-                        ? <GroupTeamItem team={lastTeam} bottom={true}/>
+                        ? <GroupTeamItem team={lastTeam} bottom={true} linkTeams={true}/>
                         : <></>
                     }
                 </div>
