@@ -367,10 +367,20 @@ async function reCalculateGroup(game){
       newTeamData.push(stats[((finalTeamIndices[i]*6)+j)])
     }
   }
+  let newTeamIDs = [];
+  for(let i = 0; i < newTeamData.length; i++){
+    for(let j = 0; j < teamNames.length/6; j++){
+      if(teamNames[j] == newTeamData[i*6]){
+        newTeamIDs.push(groupObj.TeamIDs[j]);
+        break;
+      }
+    }
+  }
 
   const groupRef = doc(db, "Group", groupObj.id)
   await updateDoc(groupRef, {
-    TeamData: newTeamData
+    TeamData: newTeamData,
+    TeamIDs: newTeamIDs
   })
 }
 
