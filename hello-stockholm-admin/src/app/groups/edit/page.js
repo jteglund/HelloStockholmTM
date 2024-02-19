@@ -10,7 +10,6 @@ import { db } from '../../firebase-config'
 import { collection, getDocs, doc, updateDoc, deleteDoc, getDoc} from 'firebase/firestore'
 import { generateGroupGames, deleteGroup } from '@/api/api';
 import { setAdvancements } from '@/api/groupAPI';
-import { tree } from 'next/dist/build/templates/app-page';
 
 export default function Home() {
   const [loggedin, setLoggedin] = useState(false);
@@ -223,7 +222,8 @@ export default function Home() {
     for(let i = 0; i < group.NextGame.length/2; i++){
       //Om det grupp
       if(group.NextGame[(i*2)+1] == "3"){
-          //Lägg till lagID i grupp
+          
+        //Lägg till lagID i grupp
           let advGroupID = group.NextGame[(i*2)];
           let groupRef = doc(db, "Group", advGroupID);
           let res = await getDoc(groupRef);
@@ -233,6 +233,7 @@ export default function Home() {
           advTeamIDs.push(teamIDToPos[i]);
 
           //Byt ut rätt placeholdernamn i grupp
+          
           let placeholderName = group.Name + (i+1).toString();
           for(let j = 0;  j < advTeamData.length/6; j++){
             if(placeholderName == advTeamData[j*6]){
@@ -245,10 +246,12 @@ export default function Home() {
             TeamData: advTeamData
           })
           let gIDs = [] 
+          
           for(let j = 0; j < advGroup.Games.length; j++){
-            let gameRef = doc(db, "Game", advGroup.Games[i]);
-            let res2 = getDoc(gameRef);
+            let gameRef = doc(db, "Game", advGroup.Games[j]);
+            let res2 = await getDoc(gameRef);
             let game = {...res2.data(), id:res2.id}
+            
             if(game.Team1Name == placeholderName){
               //Byt ut placeholdernamn och id i match
               await updateDoc(gameRef, {
@@ -256,7 +259,7 @@ export default function Home() {
                 Team1ID: teamIDToPos[i]
               });
               //Lägg till matchID i lag
-              gIDs.push(advGroup.Games[i]);
+              gIDs.push(advGroup.Games[j]);
 
             }else if(game.Team2Name == placeholderName){
               //Byt ut placeholdernamn och id i match
@@ -265,19 +268,20 @@ export default function Home() {
                 Team2ID: teamIDToPos[i]
               });
               //Lägg till matchID i lag
-              gIDs.push(advGroup.Games[i]);
+              gIDs.push(advGroup.Games[j]);
             }
           }
           let tRef = doc(db, "Team", teamIDToPos[i]);
-          let res3 = getDoc(tRef);
+          let res3 = await getDoc(tRef);
           let t = {...res3.data(), id:res3.id}
           let gIDsOld = t.gameIDs;
           let gIDsNew = gIDsOld.concat(gIDs);
           let tgroupIDs = t.GroupID;
-          let newTGroupIDs = tgroupIDs.concat([advGroupID])
+          tgroupIDs.push(advGroupID);
+          
           await updateDoc(tRef, {
             gameIDs: gIDsNew,
-            GroupID: newTGroupIDs
+            GroupID: tgroupIDs
           });
 
       }else{
