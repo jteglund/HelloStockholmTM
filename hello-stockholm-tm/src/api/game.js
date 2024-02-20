@@ -85,129 +85,246 @@ async function advanceTeams(game){
 
   //Dra ner matcherna som ska skickas till
   if(game.WNextGame.length > 0){
-    let winRef = doc(db, "Game", game.WNextGame[0]);
-    let wRes = await getDoc(winRef);
-    let wGame = {...wRes.data(), id: wRes.id}  
+    if(game.WNextGame[1] != "3"){
+      let winRef = doc(db, "Game", game.WNextGame[0]);
+      let wRes = await getDoc(winRef);
+      let wGame = {...wRes.data(), id: wRes.id}  
 
-    //Kolla så den är ostartad
-    if(wGame.Status == 0){
-      //Kolla så att id är tomt i matchen annars måste det hanteras
-      let pos = ""
-      if(game.WNextGame[1] == 1){
-        pos = wGame.Team1ID;
-      }
-      if(game.WNextGame[1] == 2){
-        pos = wGame.Team2ID;
-      }  
-
-      if(pos != ""){
-        //Ta bort matchen från det laget
-        let gameID = wGame.id;
-        let teamRef = doc(db, "Team", pos);
-        let tRes = await getDoc(teamRef);
-        let team = {...tRes.data(), id: tRes.id}
-
-        let newGameIDs = []
-        for(let i in team.gameIDs){
-          if(team.gameIDs[i] != gameID){
-            newGameIDs.push(team.GameIDs[i]);
-          }
+      //Kolla så den är ostartad
+      if(wGame.Status == 0){
+        //Kolla så att id är tomt i matchen annars måste det hanteras
+        let pos = ""
+        if(game.WNextGame[1] == 1){
+          pos = wGame.Team1ID;
         }
-        await updateDoc(teamRef, {
-          gameIDs: newGameIDs
+        if(game.WNextGame[1] == 2){
+          pos = wGame.Team2ID;
+        }  
+
+        if(pos != ""){
+          //Ta bort matchen från det laget
+          let gameID = wGame.id;
+          let teamRef = doc(db, "Team", pos);
+          let tRes = await getDoc(teamRef);
+          let team = {...tRes.data(), id: tRes.id}
+
+          let newGameIDs = []
+          for(let i in team.gameIDs){
+            if(team.gameIDs[i] != gameID){
+              newGameIDs.push(team.GameIDs[i]);
+            }
+          }
+          await updateDoc(teamRef, {
+            gameIDs: newGameIDs
+          });
+        }
+        //Lägg in lag
+        //Wgame
+        if(game.WNextGame[1] == 1){
+          await updateDoc(winRef, {
+            Team1ID: winnerId,
+            Team1Name: winnerName
+          })
+        }else if(game.WNextGame[1] == 2){
+          await updateDoc(winRef, {
+            Team2ID: winnerId,
+            Team2Name: winnerName
+          })
+        }
+        //Lägg till ny match i lag
+        let wTeamRef = doc(db, "Team", winnerId);
+        let wTRes = await getDoc(wTeamRef);
+        let wTeam = {...wTRes.data(), id:wTRes.id};
+        let wGameIDs = wTeam.gameIDs;
+        wGameIDs.push(game.WNextGame[0]);
+
+        await updateDoc(wTeamRef, {
+          gameIDs: wGameIDs
         });
       }
-      //Lägg in lag
-      //Wgame
-      if(game.WNextGame[1] == 1){
-        await updateDoc(winRef, {
-          Team1ID: winnerId,
-          Team1Name: winnerName
-        })
-      }else if(game.WNextGame[1] == 2){
-        await updateDoc(winRef, {
-          Team2ID: winnerId,
-          Team2Name: winnerName
-        })
-      }
+    }else{
+      //Dra ner grupp
+      let groupRef = doc(db, "Group", game.WNextGame[0]);
+      let res = await getDoc(groupRef);
+      let group = {...res.data(), id:res.id};
       
+      let groupTeamData = group.TeamData;
+      let groupTeamIDs = group.TeamIDs;
+      let placeholdername = "W" + game.GameName;
+
+      //Lägg till lagnamn i teamData
+      for(let i = 0; i < groupTeamData.length/6; i++){
+        if(groupTeamData[i*6] == placeholdername){
+          groupTeamData[i*6] = winnerName;
+        }
+      }
+      //Lägg till lagID i teamIDs
+      groupTeamIDs.push(winnerId);
+
+      await updateDoc(groupRef, {
+        TeamData: groupTeamData,
+        TeamIDs: groupTeamIDs
+      });
+
+      //Dra ner gruppmatcher
+      let groupGames = group.Games;
+      let gameIDs = [];
+      for(let i = 0; i < groupGames.length; i++){
+        //Lägg till lagnamn och lagID i matcherna med rätt placeholdername
+        let groupGameRef = doc(db, "Game", groupGames[i]);
+        let ggRes = await getDoc(groupGameRef);
+        let groupGame = {...ggRes.data(), id:ggRes.id}
+
+        if(groupGame.Team1Name == placeholdername){
+          await updateDoc(groupGameRef, {
+            Team1Name: winnerName,
+            Team1ID: winnerId
+          });
+          gameIDs.push(groupGames[i]);
+        }else if(groupGame.Team2Name == placeholdername){
+          await updateDoc(groupGameRef, {
+            Team2Name: winnerName,
+            Team2ID: winnerId
+          });
+          gameIDs.push(groupGames[i]);
+        }
+      }      
+      
+      //Lägg till matchid i lag
+      //Lägg till gruppid i lagss
+      let wTeamRef = doc(db, "Team", winnerId);
+      let wTRes = await getDoc(wTeamRef);
+      let wTeam = {...wTRes.data(), id:wTRes.id};
+      let wGameIDs = wTeam.gameIDs;
+      let newGameID = wGameIDs.concat(gameIDs);
+      let newGroupID = wTeam.GroupID;
+      newGroupID.push(game.WNextGame[0]);
+
+      await updateDoc(wTeamRef, {
+        gameIDs: newGameID,
+        GroupID: newGroupID
+      });
     }
   }
-  //Lägg till ny match i lag
-  let wTeamRef = doc(db, "Team", winnerId);
-  let wTRes = await getDoc(wTeamRef);
-  let wTeam = {...wTRes.data(), id:wTRes.id};
-  let wGameIDs = wTeam.gameIDs;
-  if(game.WNextGame.length > 0){
-    wGameIDs.push(game.WNextGame[0]);
-  }
-  
-  await updateDoc(wTeamRef, {
-    WinsTotal: wTeam.WinsTotal+1,
-    GoalsScoredTotal: wTeam.GoalsScoredTotal+winnerScore,
-    GoalsConcededTotal: wTeam.GoalsConcededTotal+loserScore,
-    gameIDs: wGameIDs
-  });
   
   if(game.LNextGame.length > 0){
-    let lossRef = doc(db, "Game", game.LNextGame[0]);
-    let lRes = await getDoc(lossRef);
-    let lGame = {...lRes.data(), id: lRes.id}
+    if(game.LNextGame[1] != "3"){
+      let lossRef = doc(db, "Game", game.LNextGame[0]);
+      let lRes = await getDoc(lossRef);
+      let lGame = {...lRes.data(), id: lRes.id}
 
-    if(lGame.Status == 0){
-      let pos2 = "";
-      if(game.LNextGame[1] == 1){
-        pos2 = lGame.Team1ID;
-      }
-      if(game.LNextGame[1] == 2){
-        pos2 = lGame.Team2ID;
-      }  
-
-      if(pos2 != ""){
-        //Ta bort matchen från det laget
-        let gameID = lGame.id;
-        let teamRef = doc(db, "Team", pos2);
-        let tRes = await getDoc(teamRef);
-        let team = {...tRes.data(), id: tRes.id}
-
-        let newGameIDs = []
-        for(let i in team.gameIDs){
-          if(team.gameIDs[i] != gameID){
-            newGameIDs.push(team.GameIDs[i]);
-          }
+      if(lGame.Status == 0){
+        let pos2 = "";
+        if(game.LNextGame[1] == 1){
+          pos2 = lGame.Team1ID;
         }
-        await updateDoc(teamRef, {
-          gameIDs: newGameIDs
+        if(game.LNextGame[1] == 2){
+          pos2 = lGame.Team2ID;
+        }  
+
+        if(pos2 != ""){
+          //Ta bort matchen från det laget
+          let gameID = lGame.id;
+          let teamRef = doc(db, "Team", pos2);
+          let tRes = await getDoc(teamRef);
+          let team = {...tRes.data(), id: tRes.id}
+
+          let newGameIDs = []
+          for(let i in team.gameIDs){
+            if(team.gameIDs[i] != gameID){
+              newGameIDs.push(team.GameIDs[i]);
+            }
+          }
+          await updateDoc(teamRef, {
+            gameIDs: newGameIDs
+          });
+        }
+
+        if(game.LNextGame[1] == 1){
+          await updateDoc(lossRef, {
+            Team1ID: loserId,
+            Team1Name: loserName
+          })
+        }else if(game.LNextGame[1] == 2){
+          await updateDoc(lossRef, {
+            Team2ID: loserId,
+            Team2Name: loserName
+          })
+        }
+        let lTeamRef = doc(db, "Team", loserId);
+        let lTRes = await getDoc(lTeamRef);
+        let lTeam = {...lTRes.data(), id:lTRes.id};
+        let lGameIDs = lTeam.gameIDs;
+        lGameIDs.push(game.LNextGame[0]);
+        
+        await updateDoc(lTeamRef, {
+          gameIDs: lGameIDs
         });
       }
+    }else{
+      //Dra ner grupp
+      let groupRef = doc(db, "Group", game.LNextGame[0]);
+      let res = await getDoc(groupRef);
+      let group = {...res.data(), id:res.id};
+      
+      let groupTeamData = group.TeamData;
+      let groupTeamIDs = group.TeamIDs;
+      let placeholdername = "L" + game.GameName;
 
-      if(game.LNextGame[1] == 1){
-        await updateDoc(lossRef, {
-          Team1ID: loserId,
-          Team1Name: loserName
-        })
-      }else if(game.LNextGame[1] == 2){
-        await updateDoc(lossRef, {
-          Team2ID: loserId,
-          Team2Name: loserName
-        })
+      //Lägg till lagnamn i teamData
+      for(let i = 0; i < groupTeamData.length/6; i++){
+        if(groupTeamData[i*6] == placeholdername){
+          groupTeamData[i*6] = loserName;
+        }
       }
+      //Lägg till lagID i teamIDs
+      groupTeamIDs.push(loserId);
 
+      await updateDoc(groupRef, {
+        TeamData: groupTeamData,
+        TeamIDs: groupTeamIDs
+      });
+
+      //Dra ner gruppmatcher
+      let groupGames = group.Games;
+      let gameIDs = [];
+      for(let i = 0; i < groupGames.length; i++){
+        //Lägg till lagnamn och lagID i matcherna med rätt placeholdername
+        let groupGameRef = doc(db, "Game", groupGames[i]);
+        let ggRes = await getDoc(groupGameRef);
+        let groupGame = {...ggRes.data(), id:ggRes.id}
+
+        if(groupGame.Team1Name == placeholdername){
+          await updateDoc(groupGameRef, {
+            Team1Name: loserName,
+            Team1ID: loserId
+          });
+          gameIDs.push(groupGames[i]);
+        }else if(groupGame.Team2Name == placeholdername){
+          await updateDoc(groupGameRef, {
+            Team2Name: loserName,
+            Team2ID: loserId
+          });
+          gameIDs.push(groupGames[i]);
+        }
+      }      
+      
+      //Lägg till matchid i lag
+      //Lägg till gruppid i lagss
+      let lTeamRef = doc(db, "Team", loserId);
+      let lTRes = await getDoc(lTeamRef);
+      let lTeam = {...lTRes.data(), id:lTRes.id};
+      let lGameIDs = lTeam.gameIDs;
+      let newGameID = lGameIDs.concat(gameIDs);
+      let newGroupID = lTeam.GroupID;
+      newGroupID.push(game.LNextGame[0]);
+
+      await updateDoc(lTeamRef, {
+        gameIDs: newGameID,
+        GroupID: newGroupID
+      }); 
     }
   }
-  let lTeamRef = doc(db, "Team", loserId);
-  let lTRes = await getDoc(lTeamRef);
-  let lTeam = {...lTRes.data(), id:lTRes.id};
-  let lGameIDs = lTeam.gameIDs;
-  if(game.LNextGame.length > 0){
-    lGameIDs.push(game.LNextGame[0]);
-  }
-  await updateDoc(lTeamRef, {
-    LossesTotal: lTeam.LossesTotal+1,
-    GoalsScoredTotal: lTeam.GoalsScoredTotal+loserScore,
-    GoalsConcededTotal: lTeam.GoalsConcededTotal+winnerScore,
-    gameIDs: lGameIDs
-  });
 }
 
 async function reCalculateGroup(game){
