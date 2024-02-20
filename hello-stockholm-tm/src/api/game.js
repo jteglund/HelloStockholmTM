@@ -85,7 +85,7 @@ async function advanceTeams(game){
 
   //Dra ner matcherna som ska skickas till
   if(game.WNextGame.length > 0){
-    if(game.WNextGame[1] != "3"){
+    if(game.WNextGame[1] != 3){
       let winRef = doc(db, "Game", game.WNextGame[0]);
       let wRes = await getDoc(winRef);
       let wGame = {...wRes.data(), id: wRes.id}  
@@ -111,7 +111,7 @@ async function advanceTeams(game){
           let newGameIDs = []
           for(let i in team.gameIDs){
             if(team.gameIDs[i] != gameID){
-              newGameIDs.push(team.GameIDs[i]);
+              newGameIDs.push(team.gameIDs[i]);
             }
           }
           await updateDoc(teamRef, {
@@ -208,7 +208,7 @@ async function advanceTeams(game){
   }
   
   if(game.LNextGame.length > 0){
-    if(game.LNextGame[1] != "3"){
+    if(game.LNextGame[1] != 3){
       let lossRef = doc(db, "Game", game.LNextGame[0]);
       let lRes = await getDoc(lossRef);
       let lGame = {...lRes.data(), id: lRes.id}
@@ -232,7 +232,7 @@ async function advanceTeams(game){
           let newGameIDs = []
           for(let i in team.gameIDs){
             if(team.gameIDs[i] != gameID){
-              newGameIDs.push(team.GameIDs[i]);
+              newGameIDs.push(team.gameIDs[i]);
             }
           }
           await updateDoc(teamRef, {
