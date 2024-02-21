@@ -90,11 +90,6 @@ export default function Home({params}) {
                     <h1 className={styles.textTeam}>{team.Name}</h1>
                 }
             </div>
-            { team &&
-                <div className={styles.center}>
-                    <Stats wins={team.WinsTotal} losses={team.LossesTotal} pd={team.GoalsScoredTotal - team.GoalsConcededTotal}/>
-                </div>
-            }
             { groups &&
                 <div className={styles.container}>
                     {groups.map((group) => 

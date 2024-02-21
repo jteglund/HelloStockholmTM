@@ -18,6 +18,7 @@ export default function Home({params}) {
     const [division, setDivision] = useState("");
     const [winnerGame, setWgame] = useState(null);
     const [loserGame, setLGame] = useState(null);
+    const [lgameOrGroup, setLGOG] = useState(null);
 
     const dateTimeConverter = (minutes) => {
         let dateTime = convertMinutesToDate(minutes);
@@ -34,12 +35,21 @@ export default function Home({params}) {
     }, [])
 
     useEffect(() => {
-        const getAdv = async (wid, lid) => {
+        const getAdv = async (wid, lid, lpos) => {
             if(lid != ""){
-                const lgameRef = doc(db, "Game", lid);
-                const res = await getDoc(lgameRef);
-                let lgame = {...res.data(), id: res.id};
-                setLGame(lgame);
+                if(lpos != 3){
+                    const lgameRef = doc(db, "Game", lid);
+                    const res = await getDoc(lgameRef);
+                    let lgame = {...res.data(), id: res.id};
+                    setLGame(lgame);
+                    setLGOG(1);
+                }else{
+                    const lgroupRef = doc(db, "Group", lid);
+                    const res = await getDoc(lgroupRef);
+                    let lgroup = {...res.data(), id: res.id};
+                    setLGame(lgroup);
+                    setLGOG(2);
+                }
             }
             if(wid != ""){
                 const wgameRef = doc(db, "Game", wid);
@@ -62,10 +72,12 @@ export default function Home({params}) {
                     wid = game.WNextGame[0];
                 }
                 let lid = "";
+                let lpos = 0;
                 if(game.LNextGame.length > 0){
                     lid = game.LNextGame[0];
+                    lpos = game.LNextGame[1];
                 }
-                getAdv(wid, lid)
+                getAdv(wid, lid, lpos)
             }
         }
     }, [game]);
@@ -108,12 +120,22 @@ export default function Home({params}) {
                     </Link>
                 </div>
             }
-            { loserGame &&
+            { lgameOrGroup === 1 &&
                 <div className={styles.advContainer}>
                     <div className={styles.advText}>Loser advances to: </div>
                     <Link href={'/game/' + loserGame.id}>
                         <div className={styles.advGame} >
                             <h4 >{loserGame.GameName}</h4>
+                        </div>
+                    </Link>
+                </div>
+            }
+            { lgameOrGroup === 2 &&
+                <div className={styles.advContainer}>
+                    <div className={styles.advText}>Loser advances to: </div>
+                    <Link href={'/group/' + loserGame.id}>
+                        <div className={styles.advGame} >
+                            <h4 >{loserGame.Name}</h4>
                         </div>
                     </Link>
                 </div>
