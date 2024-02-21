@@ -3,7 +3,7 @@ import { getFirestore } from "@firebase/firestore"
 import { getAuth } from "@firebase/auth"
 
 const firebaseConfig = {
- apiKey: process.env.API_KEY,
+ apiKey: process.env.NEXT_PUBLIC_API_KEY,
  authDomain: "hellostockholm-10129.firebaseapp.com",
  projectId: "hellostockholm-10129",
  storageBucket: "hellostockholm-10129.appspot.com",

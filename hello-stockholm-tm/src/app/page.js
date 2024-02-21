@@ -3,9 +3,9 @@
 import styles from './page.module.css'
 import TextButton from '@/components/TextButton'
 import { useEffect, useState } from 'react'
-//import { db } from './firebase-config'
-//import { collection, getDocs } from 'firebase/firestore'
-//import { createTeam } from '@/api/team'
+import { db } from './firebase-config'
+import { collection, getDocs } from 'firebase/firestore'
+import { createTeam } from '@/api/team'
 import TeamsList from '@/components/TeamsList'
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
   const [teams, setTeams] = useState([]);
   const [openTeams, setOpenTeams] = useState([]);
   const [womenTeams, setWomenTeams] = useState([]);
-  //const teamsCollectionRef = collection(db, "Team");
+  const teamsCollectionRef = collection(db, "Team");
 
   const handleOpenButtonPress = () => {
     setOpenWomen(true);
@@ -40,18 +40,18 @@ export default function Home() {
     setWomenTeams(women);
   }
 
-  // useEffect(() => {
-  //   const getTeams = async () => {
-  //     const data = await getDocs(teamsCollectionRef);
-  //     setTeams(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-  //   }
+  useEffect(() => {
+    const getTeams = async () => {
+      const data = await getDocs(teamsCollectionRef);
+      setTeams(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    }
     
-  //   getTeams();
-  // }, [])
+    getTeams();
+  }, [])
 
-  // useEffect(() => {
-  //   setTeamsByDivision(teams);
-  // }, [teams])
+  useEffect(() => {
+    setTeamsByDivision(teams);
+  }, [teams])
 
   return (
     <main className={styles.main}>
