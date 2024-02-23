@@ -178,18 +178,22 @@
 
 .TeamLeftScoreText {
     padding: 23%;
+    color: black;
 }
 
 .TeamLeftScoreText2 {
     padding: 24%;
+    color: black;
 }
 
 .TeamLeftScoreText3 {
     padding: 25%;
+    color: black;
 }
 
 .TeamLeftScoreText4 {
     padding: 25%;
+    color: black;
 }
 
 .TeamLeftText {
@@ -302,6 +306,7 @@
 
 .PopupText {
     padding: 1%;
+    color: black;
 }
 
 .ReturnButton {
