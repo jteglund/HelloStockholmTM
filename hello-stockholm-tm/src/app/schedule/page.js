@@ -98,6 +98,17 @@ export default function Home() {
   
   return (
     <main className={styles.main}>
+      <div className={styles.center} style={{paddingBottom: "20px"}}>
+        <iframe width="360" 
+        height="200" 
+        src="https://www.youtube.com/embed/videoseries?si=1j456eLMElDHX2KC&amp;list=PLl4jul1hSIE61QYOGNs_6hJk-xWinTqaB" 
+        title="YouTube video player" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; allowfullscreen">
+          
+        </iframe>
+
+      </div>
       <div className={styles.center}>
         <TextButton prompt={"OPEN"} handlePress={handleOpenButtonPress} active={openWomen}/>
         <TextButton prompt={"WOMEN"} handlePress={handleWomenButtonPress} active={!openWomen}/>
