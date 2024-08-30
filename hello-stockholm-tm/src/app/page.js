@@ -7,11 +7,22 @@ import { db } from './firebase-config'
 import { collection, getDocs } from 'firebase/firestore'
 import { createTeam } from '@/api/team'
 import TeamsList from '@/components/TeamsList'
+import DivisionButton from '@/components/DivisionButton'
 
 export default function Home() {
   const [teams, setTeams] = useState([]);
+  const [openTeams, setOT] = useState([]);
+  const [womenTeams, setWT] = useState([]);
+  const [divisionFlag, setDFlag] = useState('Open');
   const teamsCollectionRef = collection(db, "Teams");
 
+  const setOFlag = () => {
+    setDFlag("Open");
+  }
+  const setWFlag = () => {
+    setDFlag("Women");
+  }
+  
   useEffect(() => {
     const sortTeams = (team1, team2) => {
       return team1.TeamName <= team2.TeamName ? -1 : 1;
@@ -22,7 +33,18 @@ export default function Home() {
       let teamsList = [];
       teamsList = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       teamsList.sort(sortTeams);
-      setTeams(teamsList);
+      let wTeams = [];
+      let oTeams = [];
+      for(let t in teamsList){
+        if(teamsList[t].Division == 'Women'){
+          wTeams.push(teamsList[t]);
+        }else if(teamsList[t].Division == 'Open'){
+          oTeams.push(teamsList[t]);
+        }
+      }
+      setOT(oTeams);
+      setWT(wTeams)
+      //setTeams(teamsList);
     }
     
     getTeams();
@@ -30,8 +52,27 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <div className={styles.center}>
+        <DivisionButton
+            prompt="OPEN"
+            onPressFunction={setOFlag}
+          />
+          
+          <DivisionButton
+            prompt="WOMEN"
+            onPressFunction={setWFlag}
+          />
+        </div>
       <div className={styles.teamListContainer}>
-        { teams.map((team) => <TeamsList key={team.id} team={team} />) }
+        {divisionFlag == 'Open' ?
+        <> 
+          { openTeams.map((team) => <TeamsList key={team.id} team={team} />) }
+        </> :
+        <>
+          { womenTeams.map((team) => <TeamsList key={team.id} team={team} />) } 
+        </>
+        }
+        
       </div>
     </main>
   )

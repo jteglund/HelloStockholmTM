@@ -266,3 +266,38 @@
   width: 280px;
   height: 240px;
 }
+
+.button{
+  width: 80px;
+  height: 35px;
+  background-color:#0081b4;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+.button:hover{
+  width: 80px;
+  height: 35px;
+  background-color:#005374;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+.divisionText{
+  padding-top: 7px;
+  color: white;
+
+}
