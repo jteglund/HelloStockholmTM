@@ -1,5 +1,5 @@
 import {db} from '../app/firebase-config'
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore'
+import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, Timestamp} from 'firebase/firestore'
 import { getGroups } from './api';
 
 function checkIfGameExists(listOfGames, gameName){
@@ -12,18 +12,18 @@ function checkIfGameExists(listOfGames, gameName){
 }
 
 export async function getGames(){
-    const gamesCollectionRef = collection(db, "Game");
+    const gamesCollectionRef = collection(db, "Games");
     const data = await getDocs(gamesCollectionRef);
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
 
 export async function getTeams(){
-    const teamssCollectionRef = collection(db, "Team");
+    const teamssCollectionRef = collection(db, "Teams");
     const data = await getDocs(teamssCollectionRef);
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 }
 
-export async function createGame(gameName, division){
+export async function createGame(gameName){
     //Hämta alla matcher
     const listOfGames = await getGames();
 
@@ -31,17 +31,14 @@ export async function createGame(gameName, division){
     let gameExists = checkIfGameExists(listOfGames, gameName);
     //Lägg till dokument
     if(!gameExists){
-        const gamesCollectionRef = collection(db, "Game");
+        const gamesCollectionRef = collection(db, "Games");
         let game = {
-            DateTime: 0,
-            Division: division,
+            DateTime: Timestamp.fromDate(new Date()),
             Field: "Field X",
             GameName: gameName,
             LNextGame: [],
             Status: 0,
-            Team1ID: "",
             Team1Name: "Team 1",
-            Team2ID: "",
             Team1Score: 0,
             Team2Name: "Team 2",
             Team2Score: 0,
@@ -58,67 +55,64 @@ export async function createGame(gameName, division){
     return -1;
 }
 
-export function convertMinutesToDate(minutes){
-    const originDay = 23;
-    let dayMinute = 1440;
-    let hourMinute = 60;
-    let remainder;
-  
-    let day = Math.floor(minutes/dayMinute) + originDay;
-    remainder = minutes % dayMinute;
-  
-    let hour = Math.floor(remainder/hourMinute);
-    remainder = remainder % hourMinute;
-  
-    let minute = remainder;
-    let hString = hour.toString();
-    if(hour < 10){
-      hString = "0" + hour.toString();
+export function convertMinutesToDate(dateTime){
+    let monthMap = {
+        0: "Jan",
+        1: "Feb",
+        2: "Mar",
+        3: "Apr",
+        4: "Maj",
+        5: "Jun",
+        6: "Jul",
+        7: "Aug",
+        8: "Sep",
+        9: "Okt",
+        10: "Nov",
+        11: "Dec"
     }
-  
-    let mString = minute.toString()
-    if(minute < 10){
-      mString = "0" + minute.toString();
-    }
-    return [day.toString(), hString, mString];
+    
+    const date = dateTime.toDate();
+    let month = monthMap[date.getMonth()];
+    let day = date.getDate().toString();
+    let hour = date.getHours().toString();
+    let minutes = date.getMinutes().toString();
+    return [month, day.toString(), hour, minutes];
     //return hString + ":" + mString + " - " + day.toString() + " Feb";
   }
 
 export function convertDateToMinutes(day, hour, minute){
-    const originDay = 23;
+    const originDay = 11;
     let days = parseInt(day) - originDay;
 
     return days*1440 + parseInt(hour)*60 + parseInt(minute);
 }
 
-export async function updateGeneral(id, gameName, division, dateTime, field){
-    const gameRef = doc(db, "Game", id);
+export async function updateGeneral(id, gameName, dateTime, field){
+    const gameRef = doc(db, "Games", id);
     await updateDoc(gameRef, {
         GameName: gameName,
-        Division: division,
         DateTime: dateTime,
         Field: field,
     })
 }
 
 export async function setPlaceholderTeamNames(id, team1name, team2name){
-    const gameRef = doc(db, "Game", id);
+    const gameRef = doc(db, "Games", id);
     await updateDoc(gameRef, {
         Team1Name: team1name,
         Team2Name: team2name,
-        Team1ID: "",
-        Team2ID: "",
     })
 }
 
-export async function setExistingTeam(gameID, teamname, division, index){
+export async function setExistingTeam(gameID, teamname, index){
     if(index < 1 || index > 2){
         return -1;
     }
+    
     let teamsList = await getTeams();
     let teamIndex = -1;
     for(let i in teamsList){
-        if(teamsList[i].Name === teamname && teamsList[i].Division === division){
+        if(teamsList[i].TeamName === teamname){
             teamIndex = i;
         }
     }
@@ -126,30 +120,28 @@ export async function setExistingTeam(gameID, teamname, division, index){
         return -1;
     }
 
-    const gameRef = doc(db, "Game", gameID);
-    //let gameDoc = await getDoc(gameRef);
-    //let game = { ...gameDoc.data(), id: gameDoc.id };
-    const teamRef = doc(db, "Team", teamsList[teamIndex].id)
+    const gameRef = doc(db, "Games", gameID);
+    const teamGameRef = collection(db, "TeamGame");
     
+    const teamRef = doc(db, "Teams", teamsList[teamIndex].id)
 
-    let gameIDs = teamsList[teamIndex].gameIDs
-    gameIDs.push(gameID);
+    let teamGame = {
+        GameID: gameID,
+        TeamID: teamsList[teamIndex].id,
+        Position: index
+    }
 
-    await updateDoc(teamRef, {
-        gameIDs: gameIDs
-    })
+    await addDoc(teamGameRef, teamGame);
 
     if(index === 1){
         //TODO: ta bort match id från lag om det redan ligger ett lag där
         
         await updateDoc(gameRef, {
-            Team1Name: teamsList[teamIndex].Name,
-            Team1ID: teamsList[teamIndex].id
+            Team1Name: teamsList[teamIndex].TeamName,
         })
     }else if(index === 2){
         await updateDoc(gameRef, {
-            Team2Name: teamsList[teamIndex].Name,
-            Team2ID: teamsList[teamIndex].id
+            Team2Name: teamsList[teamIndex].TeamName,
         })
     }
     return 1;
@@ -169,7 +161,7 @@ export async function setNextGame(gameID, gameName, wl, teamIndex){
         let groupList = await getGroups();
         let groupIndex = -1;
         for(let i in groupList){
-            if(groupList[i].Name === gameName){
+            if(groupList[i].GroupName === gameName){
                 groupIndex = i;
             }
         }
@@ -191,7 +183,7 @@ export async function setNextGame(gameID, gameName, wl, teamIndex){
         id = gamesList[gameIndex].id;
     }
 
-    const gameRef = doc(db, "Game", gameID);
+    const gameRef = doc(db, "Games", gameID);
     if(wl === 0){
         await updateDoc(gameRef, {
             WNextGame: [id, teamIndex]
@@ -205,7 +197,7 @@ export async function setNextGame(gameID, gameName, wl, teamIndex){
 }
 
 export async function setGameReady(gameID){
-    const gameRef = doc(db, "Game", gameID)
+    const gameRef = doc(db, "Games", gameID)
     await updateDoc(gameRef, {
         Ready: 1
     })

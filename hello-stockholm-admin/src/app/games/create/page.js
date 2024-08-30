@@ -22,7 +22,7 @@ export default function Home() {
 
 
     const create = () =>{
-      let status = createGame(gameName, parseInt(division));
+      let status = createGame(gameName);
       if(status === -1){
         setErrorMessage(1);
         setSuccess(0);
@@ -59,17 +59,7 @@ export default function Home() {
               <h3>Game name: </h3>
               <input value={gameName} onChange={updateGameName} className={styles.input} placeholder='Enter game name'></input>
             </div>
-            <div className={styles.center2}> 
-              <h3>Division:</h3>
-              <select 
-                value={division}
-                onChange={e => setDivision(e.target.value)}
-                className={styles.select}
-              >
-                <option value="0">Open</option>
-                <option value="1">Women</option>
-              </select>
-            </div>
+            
             <div className={styles.center}>
               <div className={styles.createButton} onClick={create}>Create game</div>
             </div>

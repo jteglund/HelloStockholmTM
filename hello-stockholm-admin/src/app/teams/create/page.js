@@ -15,7 +15,7 @@ export default function Home() {
   const [teamName, setTeamName] = useState("");
   const [division, setDivision] = useState("0");
   const [teams, setTeams] = useState(null);
-  const teamsCollectionRef = collection(db, "Team");
+  const teamsCollectionRef = collection(db, "Teams");
   const [errorMessage, setEMessage] = useState(0);
   const [successMessage, setSuccessMessage] = useState(0);
   const [refresh, setRefresh] = useState(0);
@@ -46,18 +46,7 @@ export default function Home() {
     }else{
       let team = 
       {
-        Name: teamName,
-        WinsGroup: 0,
-        LossesGroup: 0,
-        GoalsScoredGroup: 0,
-        GoalsConcededGroup: 0,
-        WinsTotal: 0,
-        LossesTotal: 0,
-        GoalsScoredTotal: 0,
-        GoalsConcededTotal: 0,
-        GroupID: [],
-        Division: parseInt(division),
-        gameIDs: [],
+        TeamName: teamName
       }
 
       await addDoc(teamsCollectionRef, team);
@@ -102,17 +91,6 @@ export default function Home() {
             <div className={styles.center2}> 
               <h3>Team name: </h3>
               <input value={teamName} onChange={updateTeamName} className={styles.input} placeholder='Enter team name'></input>
-            </div>
-            <div className={styles.center2}> 
-              <h3>Division:</h3>
-              <select 
-                value={division}
-                onChange={e => setDivision(e.target.value)}
-                className={styles.select}
-              >
-                <option value="0">Open</option>
-                <option value="1">Women</option>
-              </select>
             </div>
             <div className={styles.center}>
               <div className={styles.createButton} onClick={createTeam}>Create team</div>

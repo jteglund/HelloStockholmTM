@@ -9,74 +9,63 @@ import { collection, getDocs} from 'firebase/firestore'
 import { createGroup } from '@/api/group';
 
 export default function Home() {
-  const groupsCollectionRef = collection(db, "Group");
-  const [openWomen, setOpenWomen] = useState(true);
+  const groupsCollectionRef = collection(db, "Groups");
+  const groupTeamsCollectionRef = collection(db, "GroupTeams");
   const [groups, setGroups] = useState([]);
-  const [openGroups, setOpenGroups] = useState([]);
-  const [womenGroups, setWomenGroups] = useState([]);
+  const [groupTeams, setGroupTeams] = useState([]);
 
-  const handleOpenButtonPress = () => {
-    setOpenWomen(true);
-  }
-
-  const handleWomenButtonPress = () => {
-    setOpenWomen(false);
-  }
-
-  //TODO Ta bort }:-(
-  const temp = () => {
-    let name = "OB";
-    let division = 0;
-    let teamdata = ["SUFC Odin", "3", "3", "0", "+24", "9","KFUM Örebro", "3", "2", "1", "+13", "6","Stendungsund", "3", "2", "1", "+11", "6","La Bamba", "3", "0", "3", "-8", "0"]
-    createGroup(groupsCollectionRef, name, division, teamdata);
-  }
 
   useEffect(() => {
     const comp = (group1, group2) => {
-      if(group1.Name[1] <= group2.Name[1]){
+      if(group1[0] <= group2[0]){
         return -1;
       } else {
         return 1;
       }
     }
     const getGroups = async () => {
-      const data = await getDocs(groupsCollectionRef);
-      let g = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      g.sort(comp);
-      setGroups(g);
+      const gtdata = await getDocs(groupTeamsCollectionRef);
+      let g2 = gtdata.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      
+      let map = new Map();
+      let groupNames = [];
+
+      for(let i in g2){
+        //Kolla om den här gruppen har en lista
+        if(map.has(g2[i].GroupName)){
+          //Lägg till GD i listan om den finns
+          let tmp = map.get(g2[i].GroupName);
+          tmp.push(g2[i]);
+          map.set(g2[i].GroupName, tmp);
+        }else{
+          //Skapa
+          map.set(g2[i].GroupName, [g2[i]]);
+          groupNames.push(g2[i].GroupName);
+        }
+      }
+      
+      groupNames.sort(comp);
+
+      let groupData = [];
+      for(let i in groupNames){
+        let tmp = map.get(groupNames[i]);
+        groupData.push(tmp);
+      }
+
+      setGroups(groupData);
+      setGroupTeams(g2);
     }
     
     getGroups();
   }, []);
 
-  useEffect(() => {
-    const splitDivision = (groups) => {
-      let o = [];
-      let w = [];
-      for(let i in groups){
-        if(groups[i].Division === 0){
-          o.push(groups[i]);
-        } else if(groups[i].Division === 1){
-          w.push(groups[i]);
-        }
-      }
-      setOpenGroups(o);
-      setWomenGroups(w);
-    }
-    splitDivision(groups);
-  }, [groups])
-
   return (
     <main className={styles.main}>
-      <div className={styles.center}>
-        <TextButton prompt={"OPEN"} handlePress={handleOpenButtonPress} active={openWomen}/>
-        <TextButton prompt={"WOMEN"} handlePress={handleWomenButtonPress} active={!openWomen}/>
-      </div>
+      
 
       <div className={styles.container}>
-        { openWomen 
-          ? openGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
-          : womenGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>) 
+        { 
+           groups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
         }
       </div>
     </main>

@@ -8,7 +8,7 @@ export default function TeamsList({team}) {
         <Link href={url}>
             <div className={styles.teamListItem}>
                 <h4 className={styles.teamText}>
-                    {team.Name}
+                    {team.TeamName}
                 </h4>
             </div>
         </Link>

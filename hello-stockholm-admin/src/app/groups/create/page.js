@@ -15,7 +15,7 @@ export default function Home() {
   const [groupName, setGroupName] = useState("");
   const [division, setDivision] = useState("0");
   const [groups, setGroups] = useState(null);
-  const groupsCollectionRef = collection(db, "Group");
+  const groupsCollectionRef = collection(db, "Groups");
   const [errorMessage, setEMessage] = useState(0);
   const [successMessage, setSuccessMessage] = useState(0);
   const [refresh, setRefresh] = useState(0);
@@ -46,12 +46,9 @@ export default function Home() {
     }else{
       let group = 
       {
-        Name: groupName,
-        Games: [],
-        NextGame: [],
-        TeamData: [],
-        TeamIDs: [],
-        Division: parseInt(division)
+        GroupName: groupName,
+        GameIDs: [],
+        NextGames: [],
       }
 
       await addDoc(groupsCollectionRef, group);
@@ -97,17 +94,7 @@ export default function Home() {
               <h3>Group name: </h3>
               <input value={groupName} onChange={updateGroupName} className={styles.input} placeholder='Enter group name'></input>
             </div>
-            <div className={styles.center2}> 
-              <h3>Division:</h3>
-              <select 
-                value={division}
-                onChange={e => setDivision(e.target.value)}
-                className={styles.select}
-              >
-                <option value="0">Open</option>
-                <option value="1">Women</option>
-              </select>
-            </div>
+            
             <div className={styles.center}>
               <div className={styles.createButton} onClick={createGroup}>Create group</div>
             </div>

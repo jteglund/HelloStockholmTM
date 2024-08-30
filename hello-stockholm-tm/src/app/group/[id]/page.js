@@ -8,20 +8,37 @@ import GroupListItem from '@/components/GroupListItem'
 import GameListItem from '@/components/Game'
 
 export default function Home({params}) {
-    const groupRef = doc(db, "Group", params.id);
-    const gamesRef = collection(db, "Game");
-    const [group, setGroup] = useState(null);
+    const groupRef = doc(db, "Groups", params.id);
+    const gamesRef = collection(db, "Games");
+    const groupID = params.id;
+
+    const [groupData, setGroupData] = useState(null);
+    const [gameIDs, setGameIDs] = useState([]);
     const [games, setGames] = useState(null);
     const [gamesLive, setGamesLive] = useState(null);
     const [gamesUpcoming, setGamesUp] = useState(null);
     const [gamesPrev, setGamesPrev] = useState(null);
 
     useEffect(() => {
-        const getGroup = async () => {
+        const getGameIDs = async () => {
             const doc = await getDoc(groupRef);
-            setGroup({...doc.data(), id: params.id});
+            setGameIDs(doc.data().GameIDs);
         }
-        getGroup();
+
+        const getGroupData = async () => {
+            const q = query(collection(db, "GroupTeams"), where("GroupID", "==", groupID));
+
+            const querySnapshot = await getDocs(q);
+            let data = [];
+            querySnapshot.forEach((doc) => {
+                // doc.data() is never undefined for query doc snapshots
+                data.push({...doc.data(), id: doc.id});
+            });
+            setGroupData(data);
+        }
+
+        getGameIDs();
+        getGroupData();
     }, [])
 
     useEffect(() => {
@@ -34,8 +51,7 @@ export default function Home({params}) {
 
         const getGames = async () => {
             let lst = [];
-            if(group){
-                let gameIDs = group.Games;
+            if(gameIDs.length != 0){
                 const q = query(gamesRef, where(documentId(), "in", gameIDs));
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
@@ -47,7 +63,7 @@ export default function Home({params}) {
             }
         }
         getGames();
-    }, [group]);
+    }, [gameIDs]);
 
     useEffect(() => {
         
@@ -57,7 +73,6 @@ export default function Home({params}) {
             let prev = [];
 
             if(games){
-                console.log(games)
                 for(let i in games){
                     if(games[i].Status === 0){
                         upcoming.push(games[i]);
@@ -81,32 +96,32 @@ export default function Home({params}) {
         <main className={styles.main}>
             <div className={styles.container}>
                 {
-                    group &&
-                        <GroupListItem group={group} groupsPage={false}/>
+                    groupData &&
+                        <GroupListItem group={groupData} groupsPage={false}/>
                 }
                 
             </div>
-            <h1 className={styles.textGames}>Games</h1>
+            <h1 className={styles.textGames}>Matcher</h1>
             <div className={styles.container}>
                 
                 {
                     gamesLive &&
                     <>
-                        <h3 className={styles.textStatus}>Live</h3>
+                        <h3 className={styles.textStatus}>Spelas nu</h3>
                         {gamesLive.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesUpcoming &&
                     <>
-                        <h3 className={styles.textStatus}>Upcoming</h3>
+                        <h3 className={styles.textStatus}>Framtida</h3>
                         {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesPrev &&
                     <>
-                        <h3 className={styles.textStatus}>Finished</h3>
+                        <h3 className={styles.textStatus}>Färdigspelade</h3>
                         {gamesPrev.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }

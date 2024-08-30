@@ -351,3 +351,10 @@
     border-radius: 10px;
     text-align: center;
 }
+
+.typeText {
+    color: white;
+    font-weight: bold;
+    border-bottom: 2px solid white;
+    margin-bottom: 5px;
+}

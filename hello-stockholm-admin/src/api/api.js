@@ -1,5 +1,5 @@
 import {db} from '../app/firebase-config'
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore'
+import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, where} from 'firebase/firestore'
 
 function checkIfGameExists(listOfGames, gameName){
     for(let i in listOfGames){
@@ -11,7 +11,7 @@ function checkIfGameExists(listOfGames, gameName){
 }
 
 async function getGames(){
-    const gamesCollectionRef = collection(db, "Game");
+    const gamesCollectionRef = collection(db, "Games");
     const data = await getDocs(gamesCollectionRef);
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
@@ -21,8 +21,8 @@ export async function getGroups(){
     const data = await getDocs(groupCollectionRef);
     return data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 }
-
-export async function createAndAddGame(gameName, division, team1ID, team2ID, team1Name, team2Name){
+//KLAR
+export async function createAndAddGame(gameName, team1ID, team2ID, team1Name, team2Name){
     //Hämta alla matcher
     const listOfGames = await getGames();
 
@@ -30,17 +30,14 @@ export async function createAndAddGame(gameName, division, team1ID, team2ID, tea
     let gameExists = checkIfGameExists(listOfGames, gameName);
     //Lägg till dokument
     if(!gameExists){
-        const gamesCollectionRef = collection(db, "Game");
+        const gamesCollectionRef = collection(db, "Games");
         let game = {
-            DateTime: 0,
-            Division: division,
+            DateTime: Timestamp.fromDate(new Date()),
             Field: "Field X",
             GameName: gameName,
             LNextGame: [],
             Status: 0,
-            Team1ID: team1ID,
             Team1Name: team1Name,
-            Team2ID: team2ID,
             Team1Score: 0,
             Team2Name: team2Name,
             Team2Score: 0,
@@ -51,23 +48,22 @@ export async function createAndAddGame(gameName, division, team1ID, team2ID, tea
          
         //Lägg till matchID i lagobjekt
         let id = await addDoc(gamesCollectionRef, game)
-        const team1Ref = doc(db, "Team", team1ID);
-        const team2Ref = doc(db, "Team", team2ID);
-        const team1 = await getDoc(team1Ref);
-        const team2 = await getDoc(team2Ref);
 
-        let team1Games = team1.data().gameIDs;
-        let team2Games = team2.data().gameIDs;
-        team1Games.push(id.id);
-        team2Games.push(id.id);
+        let teamGame1 = {
+            TeamID: team1ID,
+            GameID: id.id,
+            TeamPosition: 1,
+        }
 
-        await updateDoc(team1Ref, {
-            gameIDs: team1Games
-        });
+        let teamGame2 = {
+            TeamID: team2ID,
+            GameID: id.id,
+            TeamPosition: 2,
+        }
 
-        await updateDoc(team2Ref, {
-            gameIDs: team2Games
-        });
+        const teamGameRef = collection(db, "TeamGame");
+        await addDoc(teamGameRef, teamGame1);
+        await addDoc(teamGameRef, teamGame2);
 
         return id;
     }
@@ -131,16 +127,14 @@ async function generateTemplateGroupGames(groupID, groupName, division, teamData
     });
     return 1;
 }
-
-export async function generateGroupGames(groupID, groupName, division, teamIDs, teamData, groupGames){
-    if(teamIDs.length == 0){
-        return generateTemplateGroupGames(groupID, groupName, division, teamData, groupGames);
-    }
+//KLAR
+export async function generateGroupGames(groupID, groupName, teamIDAndName, groupGames){
     let gameIDs = [];
     let count = 1;
-    for(let i = 0; i < teamIDs.length-1; i++){
-        for(let j = i+1; j < teamIDs.length; j++){
-            let id = await createAndAddGame(groupName+((count).toString()), division, teamIDs[i], teamIDs[j], teamData[i*6], teamData[j*6]); 
+    for(let i = 0; i < teamIDAndName.length-1; i++){
+        for(let j = i+1; j < teamIDAndName.length; j++){
+            
+            let id = await createAndAddGame(groupName+((count).toString()), teamIDAndName[i][0], teamIDAndName[j][0], teamIDAndName[i][1], teamIDAndName[j][1]); 
             count++;
             if(id === -1){
                 return -1;
@@ -149,9 +143,9 @@ export async function generateGroupGames(groupID, groupName, division, teamIDs, 
         }
     }
     //Lägg till matchID i gruppobjekt
-    const groupRef = doc(db, "Group", groupID);
+    const groupRef = doc(db, "Groups", groupID);
     await updateDoc(groupRef, {
-        Games: groupGames.concat(gameIDs)
+        GameIDs: groupGames.concat(gameIDs)
     });
     return 1;
 }
@@ -168,7 +162,7 @@ function removeGameFromTeam(teamGames, gameToRemove){
     });
 }
 
-export async function deleteGroup(group){
+export async function deleteGroupOld(group){
     //Ta bort gruppID från lag
     let teamIDs = group.TeamIDs;
     for(let i in teamIDs){
@@ -197,4 +191,52 @@ export async function deleteGroup(group){
     //Ta bort grupp
     let groupRef = doc(db, "Group", group.id);
     await deleteDoc(groupRef);
+}
+
+//TODO: EJ TESTAD
+export async function removeGame(id){
+    let gameRef = doc(db, "Games", id);
+    var query = firebase.collection("TeamGame").where("GameID", "==", id);
+    query
+    .get()
+    .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            let teamGameDoc = doc(db, "TeamGame", doc.id);
+            deleteDoc(teamGameDoc);
+            console.log(doc.id, " => ", doc.data());
+        });
+    })
+    .catch((error) => {
+        console.log("Error getting documents: ", error);
+    });
+
+    await deleteDoc(gameRef);
+}
+
+//TODO: EJ TESTAD
+export async function deleteGroup(group){
+    //Ta bort matcher
+    //Ta bort matchlänkar
+    let gameids = group.GameIDs;
+    let groupID = group.id;
+    
+    for(let i in gameids){
+        removeGame(gameids[i]);
+    }
+
+    
+    //Ta bort GroupTeams
+    const q = query(collection(db, "GroupTeams"), where("GroupID", "==", groupID));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        let groupteamref = doc(db, "GroupTeams", doc.id);
+        deleteDoc(groupteamref);
+        console.log(doc.id, " => ", doc.data());
+    });
+
+    //Ta bort Group
+    let groupRef = doc(db, "Groups", groupID);
+    await deleteDoc(groupRef);
+
 }

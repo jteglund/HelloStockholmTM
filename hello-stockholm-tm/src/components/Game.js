@@ -1,10 +1,16 @@
 import styles from '../app/schedule/page.module.css'
 import Link from 'next/link';
 import { convertMinutesToDate } from '@/api/game';
+import { useState, useEffect} from 'react';
 
 export default function GameListItem({game, clickable}) {
     const url = '/game/' + game.id;
+    const [dateTime, setDateTime] = useState([]);
 
+    useEffect(() => {
+        setDateTime(convertMinutesToDate(game.DateTime))
+    }, [])
+    
     return (
         <>
         { clickable ?
@@ -13,7 +19,7 @@ export default function GameListItem({game, clickable}) {
                 <div>
                     <div className={styles.gameBottomContainer}>
                         <div className={styles.gameDateBox}>
-                            <h4 className={styles.textCenter}>{convertMinutesToDate(game.DateTime)}</h4>
+                            <h4 className={styles.textCenter}>{dateTime[0]}:{dateTime[1]} - {dateTime[2]} {dateTime[3]}</h4>
                         </div>
                         <div className={styles.gameFieldBox}>
                             <h4 className={styles.textCenter}>{game.Field}</h4>
@@ -37,10 +43,10 @@ export default function GameListItem({game, clickable}) {
                             <div className={styles.gameBottomRightItem}>
                                 <h4 className={styles.textRight}>
                                     {game.Status === 0 
-                                        ? "Upcoming"
+                                        ? "Framtida"
                                         : game.Status === 1 
-                                        ? "Live"
-                                        : "Finished"
+                                        ? "Spelas"
+                                        : "Färdig"
                                     }
                                 </h4>
                             </div>
@@ -56,7 +62,7 @@ export default function GameListItem({game, clickable}) {
                 <div>
                     <div className={styles.gameBottomContainer}>
                         <div className={styles.gameDateBox}>
-                            <h4 className={styles.textCenter}>{convertMinutesToDate(game.DateTime)}</h4>
+                            <h4 className={styles.textCenter}>{dateTime[0]}:{dateTime[1]} - {dateTime[2]} {dateTime[3]}</h4>
                         </div>
                         <div className={styles.gameFieldBox}>
                             <h4 className={styles.textCenter}>{game.Field}</h4>
@@ -80,10 +86,10 @@ export default function GameListItem({game, clickable}) {
                             <div className={styles.gameBottomRightItem}>
                                 <h4 className={styles.textRight}>
                                     {game.Status === 0 
-                                        ? "Upcoming"
+                                        ? "Framtida"
                                         : game.Status === 1 
-                                        ? "Live"
-                                        : "Finished"
+                                        ? "Spelas"
+                                        : "Färdig"
                                     }
                                 </h4>
                             </div>

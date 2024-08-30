@@ -15,6 +15,7 @@ export default function Home({params}) {
     const [game, setGame] = useState(null);
     const [editName, setEditName] = useState("");
     const [editDivision, setEditDivision] = useState("0");
+    const [month, setMonth] = useState("Jan");
     const [day, setDay] = useState("0");
     const [hour, setHour] = useState("0");
     const [minute, setMinute] = useState("0");
@@ -98,9 +99,9 @@ export default function Home({params}) {
     const updateTeam = async () => {
       let stat = -1;
       if(teamIndex === "1"){
-        stat = await setExistingTeam(params.id, team1name, parseInt(editDivision), parseInt(teamIndex))
+        stat = await setExistingTeam(params.id, team1name, parseInt(teamIndex))
       } else if(teamIndex === "2"){
-        stat = await setExistingTeam(params.id, team2name, parseInt(editDivision), parseInt(teamIndex)) 
+        stat = await setExistingTeam(params.id, team2name, parseInt(teamIndex)) 
       }
       if(stat === -1){
         setTeamError(1);
@@ -121,7 +122,6 @@ export default function Home({params}) {
 
     const updateGeneralFields = async () => {
       let stat = 1;
-      let d = parseInt(editDivision);
       if(parseInt(day) == NaN){
         stat = -1;
       }
@@ -133,8 +133,8 @@ export default function Home({params}) {
       }
 
       if(stat === 1){
-        let dt = convertDateToMinutes(day, hour, minute);
-        await updateGeneral(params.id, editName, parseInt(editDivision), dt, field);
+        let dt = new Date(2024, 7, parseInt(day), parseInt(hour), parseInt(minute), 0)
+        await updateGeneral(params.id, editName, dt, field);
         setRefresh(refresh+1)
       }
     }
@@ -154,7 +154,7 @@ export default function Home({params}) {
 
     useEffect(() => {
       const getGame = async () => {
-        const gameRef = doc(db, "Game", params.id);
+        const gameRef = doc(db, "Games", params.id);
         let game = await getDoc(gameRef);
         setGame({...game.data(), id: game.id});
       }
@@ -164,11 +164,11 @@ export default function Home({params}) {
     useEffect(() => {
       if(game){
         setEditName(game.GameName);
-        setEditDivision(game.Division.toString())
         let dateTime = convertMinutesToDate(game.DateTime);
-        setDay(dateTime[0]);
-        setHour(dateTime[1]);
-        setMinute(dateTime[2]);
+        setMonth(dateTime[0]);
+        setDay(dateTime[1]);
+        setHour(dateTime[2]);
+        setMinute(dateTime[3]);
         setField(game.Field);
         setTeam1Name(game.Team1Name);
         setTeam2Name(game.Team2Name);
@@ -189,19 +189,12 @@ export default function Home({params}) {
               <div>
                 <h3>Game name</h3>
                 <input className={styles.input} value={editName} onChange={updateEditName} placeholder={"Edit game name"}></input>
-                <h3>Division</h3>
-                  <select
-                      value={editDivision}
-                      onChange={e => setEditDivision(e.target.value)}
-                      className={styles.select}
-                    >
-                    <option value="0">Open</option>
-                    <option value="1">Women</option>
-                  </select>
+                
+                  
               </div>
               <div className={styles.center2}>
                 <input className={styles.inputSmall} value={day} onChange={updateDay}></input>
-                <h3>Feb</h3>
+                <h3>{month}</h3>
                 <input className={styles.inputSmall} value={hour} onChange={updateHour}></input>
                 <h3>:</h3>
                 <input className={styles.inputSmall} value={minute} onChange={updateMinute}></input>

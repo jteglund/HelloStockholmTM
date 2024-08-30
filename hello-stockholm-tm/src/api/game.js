@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, getDoc, updateDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, getDoc, updateDoc, doc, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../app/firebase-config";
 import TeamsList from "@/components/TeamsList";
 
@@ -31,33 +31,34 @@ function convertDateToMinutes(day, hour, minute){
   return days*1440 + parseInt(hour)*60 + parseInt(minute);
 }
 
-export function convertMinutesToDate(minutes){
-  const originDay = 23;
-  let dayMinute = 1440;
-  let hourMinute = 60;
-  let remainder;
-
-  let day = Math.floor(minutes/dayMinute) + originDay;
-  remainder = minutes % dayMinute;
-
-  let hour = Math.floor(remainder/hourMinute);
-  remainder = remainder % hourMinute;
-
-  let minute = remainder;
-  let hString = hour.toString();
-  if(hour < 10){
-    hString = "0" + hour.toString();
+export function convertMinutesToDate(dateTime){
+  let monthMap = {
+    0: "Jan",
+    1: "Feb",
+    2: "Mar",
+    3: "Apr",
+    4: "Maj",
+    5: "Jun",
+    6: "Jul",
+    7: "Aug",
+    8: "Sep",
+    9: "Okt",
+    10: "Nov",
+    11: "Dec"
   }
 
-  let mString = minute.toString()
-  if(minute < 10){
-    mString = "0" + minute.toString();
+  const date = dateTime.toDate()
+  let hour = date.getHours();
+  let minutes = date.getMinutes();
+  let day = date.getDate();
+  let month = monthMap[date.getMonth()];
+  if(minutes < 10){
+    minutes = "0" + minutes.toString()
   }
-
-  return hString + ":" + mString + " - " + day.toString() + " Feb";
+  return [hour, minutes, day, month];
 }
 
-async function advanceTeams(game){
+async function advanceTeams(game, team1ID, team2ID){
   //Beräkna förloraren och vinnaren
   let winnerId = "";
   let winnerName = "";
@@ -68,261 +69,179 @@ async function advanceTeams(game){
 
   let scoreDiff = game.Team1Score - game.Team2Score;
   if(scoreDiff > 0){
-    winnerId = game.Team1ID;
+    winnerId = team1ID;
     winnerName = game.Team1Name;
     winnerScore = game.Team1Score;
-    loserId = game.Team2ID;
+    loserId = team2ID;
     loserName = game.Team2Name;
     loserScore = game.Team2Score;
   } else{
-    winnerId = game.Team2ID;
+    winnerId = team2ID;
     winnerName = game.Team2Name;
     winnerScore = game.Team2Score;
-    loserId = game.Team1ID;
+    loserId = team1ID;
     loserName = game.Team1Name;
     loserScore = game.Team1Score;
   }
 
   //Dra ner matcherna som ska skickas till
   if(game.WNextGame.length > 0){
-    if(game.WNextGame[1] != 3){
-      let winRef = doc(db, "Game", game.WNextGame[0]);
-      let wRes = await getDoc(winRef);
-      let wGame = {...wRes.data(), id: wRes.id}  
+    let winRef = doc(db, "Games", game.WNextGame[0]);
+    let wRes = await getDoc(winRef);
+    let wGame = {...wRes.data(), id: wRes.id}  
 
-      //Kolla så den är ostartad
-      if(wGame.Status == 0){
-        //Kolla så att id är tomt i matchen annars måste det hanteras
-        let pos = ""
-        if(game.WNextGame[1] == 1){
-          pos = wGame.Team1ID;
-        }
-        if(game.WNextGame[1] == 2){
-          pos = wGame.Team2ID;
-        }  
+    //Dra ner alla lag kopplade till matchen
+    const teamGameRef = collection(db, "TeamGame");
+    let teamGameW = [];
+    const q = query(teamGameRef, where("GameID", "==", wGame.id));
+    const querySnapshot = await getDocs(q);
 
-        if(pos != ""){
-          //Ta bort matchen från det laget
-          let gameID = wGame.id;
-          let teamRef = doc(db, "Team", pos);
-          let tRes = await getDoc(teamRef);
-          let team = {...tRes.data(), id: tRes.id}
+    querySnapshot.forEach((doc) => {
+        teamGameW.push({ ...doc.data(), id: doc.id });
+    });
 
-          let newGameIDs = []
-          for(let i in team.gameIDs){
-            if(team.gameIDs[i] != gameID){
-              newGameIDs.push(team.gameIDs[i]);
-            }
-          }
-          await updateDoc(teamRef, {
-            gameIDs: newGameIDs
-          });
-        }
-        //Lägg in lag
-        //Wgame
-        if(game.WNextGame[1] == 1){
-          await updateDoc(winRef, {
-            Team1ID: winnerId,
-            Team1Name: winnerName
-          })
-        }else if(game.WNextGame[1] == 2){
-          await updateDoc(winRef, {
-            Team2ID: winnerId,
-            Team2Name: winnerName
-          })
-        }
-        //Lägg till ny match i lag
-        let wTeamRef = doc(db, "Team", winnerId);
-        let wTRes = await getDoc(wTeamRef);
-        let wTeam = {...wTRes.data(), id:wTRes.id};
-        let wGameIDs = wTeam.gameIDs;
-        wGameIDs.push(game.WNextGame[0]);
-
-        await updateDoc(wTeamRef, {
-          gameIDs: wGameIDs
-        });
-      }
-    }else{
-      //Dra ner grupp
-      let groupRef = doc(db, "Group", game.WNextGame[0]);
-      let res = await getDoc(groupRef);
-      let group = {...res.data(), id:res.id};
+    //Kolla så den är ostartad
+    if(wGame.Status == 0){
+      //Kolla så att id är tomt i matchen annars måste det hanteras
       
-      let groupTeamData = group.TeamData;
-      let groupTeamIDs = group.TeamIDs;
-      let placeholdername = "W" + game.GameName;
+      let idToRemove = "";
 
-      //Lägg till lagnamn i teamData
-      for(let i = 0; i < groupTeamData.length/6; i++){
-        if(groupTeamData[i*6] == placeholdername){
-          groupTeamData[i*6] = winnerName;
+      for(let i in teamGameW){
+        if(teamGameW[i].TeamPosition == game.WNextGame[1]){
+          idToRemove = teamGameW[i].id;
         }
       }
-      //Lägg till lagID i teamIDs
-      groupTeamIDs.push(winnerId);
 
-      await updateDoc(groupRef, {
-        TeamData: groupTeamData,
-        TeamIDs: groupTeamIDs
-      });
-
-      //Dra ner gruppmatcher
-      let groupGames = group.Games;
-      let gameIDs = [];
-      for(let i = 0; i < groupGames.length; i++){
-        //Lägg till lagnamn och lagID i matcherna med rätt placeholdername
-        let groupGameRef = doc(db, "Game", groupGames[i]);
-        let ggRes = await getDoc(groupGameRef);
-        let groupGame = {...ggRes.data(), id:ggRes.id}
-
-        if(groupGame.Team1Name == placeholdername){
-          await updateDoc(groupGameRef, {
-            Team1Name: winnerName,
-            Team1ID: winnerId
-          });
-          gameIDs.push(groupGames[i]);
-        }else if(groupGame.Team2Name == placeholdername){
-          await updateDoc(groupGameRef, {
-            Team2Name: winnerName,
-            Team2ID: winnerId
-          });
-          gameIDs.push(groupGames[i]);
-        }
-      }      
+      if(idToRemove != ""){
+        //Ta bort matchen från det laget
+        let removeRef = doc(db, "TeamGame", idToRemove);
+        await deleteDoc(removeRef);
+      }
+      //Lägg in lag
+      //Wgame
+      if(game.WNextGame[1] == 1){
+        await updateDoc(winRef, {
+          Team1Name: winnerName
+        })
+      }else if(game.WNextGame[1] == 2){
+        await updateDoc(winRef, {
+          Team2Name: winnerName
+        })
+      }
       
-      //Lägg till matchid i lag
-      //Lägg till gruppid i lagss
-      let wTeamRef = doc(db, "Team", winnerId);
-      let wTRes = await getDoc(wTeamRef);
-      let wTeam = {...wTRes.data(), id:wTRes.id};
-      let wGameIDs = wTeam.gameIDs;
-      let newGameID = wGameIDs.concat(gameIDs);
-      let newGroupID = wTeam.GroupID;
-      newGroupID.push(game.WNextGame[0]);
+      let teamGameObj = {
+        TeamID: winnerId,
+        GameID: wGame.id,
+        TeamPosition: game.WNextGame[1],
+      }
 
-      await updateDoc(wTeamRef, {
-        gameIDs: newGameID,
-        GroupID: newGroupID
-      });
+      await addDoc(teamGameRef, teamGameObj);
+      
     }
   }
   
   if(game.LNextGame.length > 0){
     if(game.LNextGame[1] != 3){
-      let lossRef = doc(db, "Game", game.LNextGame[0]);
+      let lossRef = doc(db, "Games", game.LNextGame[0]);
       let lRes = await getDoc(lossRef);
       let lGame = {...lRes.data(), id: lRes.id}
+      
+      //Dra ner alla lag kopplade till matchen
+      const teamGameRef = collection(db, "TeamGame");
+      let teamGameL = [];
+      const q = query(teamGameRef, where("GameID", "==", lGame.id));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc) => {
+          teamGameL.push({ ...doc.data(), id: doc.id });
+      });
 
       if(lGame.Status == 0){
-        let pos2 = "";
-        if(game.LNextGame[1] == 1){
-          pos2 = lGame.Team1ID;
-        }
-        if(game.LNextGame[1] == 2){
-          pos2 = lGame.Team2ID;
-        }  
+        let idToRemove = "";
 
-        if(pos2 != ""){
-          //Ta bort matchen från det laget
-          let gameID = lGame.id;
-          let teamRef = doc(db, "Team", pos2);
-          let tRes = await getDoc(teamRef);
-          let team = {...tRes.data(), id: tRes.id}
-
-          let newGameIDs = []
-          for(let i in team.gameIDs){
-            if(team.gameIDs[i] != gameID){
-              newGameIDs.push(team.gameIDs[i]);
-            }
-          }
-          await updateDoc(teamRef, {
-            gameIDs: newGameIDs
-          });
+      for(let i in teamGameL){
+        if(teamGameL[i].TeamPosition == game.LNextGame[1]){
+          idToRemove = teamGameL[i].id;
         }
+      }
+
+      if(idToRemove != ""){
+        //Ta bort matchen från det laget
+        let removeRef = doc(db, "TeamGame", idToRemove);
+        await deleteDoc(removeRef);
+      }
 
         if(game.LNextGame[1] == 1){
           await updateDoc(lossRef, {
-            Team1ID: loserId,
             Team1Name: loserName
           })
         }else if(game.LNextGame[1] == 2){
           await updateDoc(lossRef, {
-            Team2ID: loserId,
             Team2Name: loserName
           })
         }
-        let lTeamRef = doc(db, "Team", loserId);
-        let lTRes = await getDoc(lTeamRef);
-        let lTeam = {...lTRes.data(), id:lTRes.id};
-        let lGameIDs = lTeam.gameIDs;
-        lGameIDs.push(game.LNextGame[0]);
         
-        await updateDoc(lTeamRef, {
-          gameIDs: lGameIDs
-        });
+
+        let teamGameObj = {
+          TeamID: loserId,
+          GameID: lGame.id,
+          TeamPosition: game.LNextGame[1],
+        }
+
+        await addDoc(teamGameRef, teamGameObj);
+        }
+    }
+  }
+}
+
+async function advanceTeamsFromGroup(group, teamData, teamIDs){
+
+  let teamGames = []
+  let teamGameCollectionRef = collection(db, "TeamGame");
+  let result = await getDocs(teamGameCollectionRef);
+  result.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    teamGames.push({...doc.data(), id: doc.id})
+  }); 
+  for(let i = 0; i < group.NextGames.length/2; i++){
+    
+    //Kolla om matchen är ostartad
+    let gameRef = doc(db, "Games", group.NextGames[i*2])
+    let res = await getDoc(gameRef);
+    let gameObj = {...res.data(), id: res.id}
+    if(gameObj.Status != 1){
+      //Lägg till namn i match
+      let pos = group.NextGames[(i*2)+1];
+      if(pos == 1){
+        await updateDoc(gameRef, {
+          Team1Name: teamData[i][0],
+        })
+      }else if(pos == 2){
+        await updateDoc(gameRef, {
+          Team2Name: teamData[i][0],
+        })
       }
+      //Kolla så det inte ligger någon skit i teamGames
+        //Ta bort isåfall
+      for(let j in teamGames){
+        if(teamGames[j].GameID == gameObj.id && teamGames[j].TeamPosition == pos){
+          let teamGameRef = doc(db, "TeamGame", teamGames[j].id)
+          await deleteDoc(teamGameRef);
+        }
+      }
+      
+      //skapa teamgames
+      let teamGameObj = {
+        TeamID: teamIDs[i],
+        GameID: gameObj.id,
+        TeamPosition: pos,
+      }
+
+      let tgRef = collection(db, "TeamGame");
+      await addDoc(tgRef, teamGameObj);
+
     }else{
-      //Dra ner grupp
-      let groupRef = doc(db, "Group", game.LNextGame[0]);
-      let res = await getDoc(groupRef);
-      let group = {...res.data(), id:res.id};
-      
-      let groupTeamData = group.TeamData;
-      let groupTeamIDs = group.TeamIDs;
-      let placeholdername = "L" + game.GameName;
-
-      //Lägg till lagnamn i teamData
-      for(let i = 0; i < groupTeamData.length/6; i++){
-        if(groupTeamData[i*6] == placeholdername){
-          groupTeamData[i*6] = loserName;
-        }
-      }
-      //Lägg till lagID i teamIDs
-      groupTeamIDs.push(loserId);
-
-      await updateDoc(groupRef, {
-        TeamData: groupTeamData,
-        TeamIDs: groupTeamIDs
-      });
-
-      //Dra ner gruppmatcher
-      let groupGames = group.Games;
-      let gameIDs = [];
-      for(let i = 0; i < groupGames.length; i++){
-        //Lägg till lagnamn och lagID i matcherna med rätt placeholdername
-        let groupGameRef = doc(db, "Game", groupGames[i]);
-        let ggRes = await getDoc(groupGameRef);
-        let groupGame = {...ggRes.data(), id:ggRes.id}
-
-        if(groupGame.Team1Name == placeholdername){
-          await updateDoc(groupGameRef, {
-            Team1Name: loserName,
-            Team1ID: loserId
-          });
-          gameIDs.push(groupGames[i]);
-        }else if(groupGame.Team2Name == placeholdername){
-          await updateDoc(groupGameRef, {
-            Team2Name: loserName,
-            Team2ID: loserId
-          });
-          gameIDs.push(groupGames[i]);
-        }
-      }      
-      
-      //Lägg till matchid i lag
-      //Lägg till gruppid i lagss
-      let lTeamRef = doc(db, "Team", loserId);
-      let lTRes = await getDoc(lTeamRef);
-      let lTeam = {...lTRes.data(), id:lTRes.id};
-      let lGameIDs = lTeam.gameIDs;
-      let newGameID = lGameIDs.concat(gameIDs);
-      let newGroupID = lTeam.GroupID;
-      newGroupID.push(game.LNextGame[0]);
-
-      await updateDoc(lTeamRef, {
-        gameIDs: newGameID,
-        GroupID: newGroupID
-      }); 
+      console.log("Game already started");
     }
   }
 }
@@ -331,7 +250,7 @@ async function reCalculateGroup(game){
   //Ta fram gruppnamn från game.GameName
   let gamename = game.GameName.replace(/[0-9]/g, '');
   //Dra ner gruppen
-  const q = query(collection(db, "Group"), where("Name", "==", gamename));
+  const q = query(collection(db, "Groups"), where("GroupName", "==", gamename));
   const querySnapshot = await getDocs(q);
   let groupObj = null;
 
@@ -341,22 +260,41 @@ async function reCalculateGroup(game){
   });
   //Dra ner alla matcher i gruppen
   let allGames = [];
-  const gamesCollectionRef = collection(db, "Game");
-  const res = await getDocs(gamesCollectionRef);
+  const gamesCollectionRef = collection(db, "Games");
+  let res = await getDocs(gamesCollectionRef);
   res.forEach((doc) => {
     allGames.push({...doc.data(), id: doc.id})
   });
 
   let groupGames = [];
   allGames.forEach((game) => {
-    if(groupObj.Games.includes(game.id)){
+    if(groupObj.GameIDs.includes(game.id)){
       groupGames.push(game);
     }
   });
 
+ 
+  let groupTeams = [];
+  
+  const groupTeamsRef = collection(db, "GroupTeams");
+  res = await getDocs(groupTeamsRef);
+  res.forEach((doc) => {
+    if(doc.data().GroupID == groupObj.id){
+      groupTeams.push({...doc.data(), id: doc.id})
+    }
+  });
+
+  let teamIDs = [];
+  let teamNames = [];
+  for(let i in groupTeams){
+    teamIDs.push(groupTeams[i].TeamID);
+    teamNames.push(groupTeams[i].TeamData[0]);
+  }
+
   //Gå igenom alla spelade matcher
   //Skapa två matriser, en för vinst/förlust (1/-1) och en för gjorda mål
-  let nTeams = groupObj.TeamIDs.length
+
+  let nTeams = groupTeams.length
   let winMatrix = [];
   let goalMatrix = [];
   for(let i = 0; i < nTeams; i++){
@@ -366,26 +304,13 @@ async function reCalculateGroup(game){
 
   //Indexet som laget ligger på i Group.TeamIDs är indexet i matriserna
   //Skapa statistik
-
-  let teamNames = [];
-  for(let i = 0; i < nTeams; i++){
-    for(let j = 0; j < groupGames.length; j++){
-      if(groupGames[j].Team1ID == groupObj.TeamIDs[i]){
-        teamNames.push(groupGames[j].Team1Name);
-        break;
-      }
-      if(groupGames[j].Team2ID == groupObj.TeamIDs[i]){
-        teamNames.push(groupGames[j].Team2Name);
-        break;
-      }
-    }
-  }
-
+  let finishedGamesCount = 0; 
   groupGames.forEach((game) => {
     if(game.Status == 2){
+      finishedGamesCount++;
       //Hitta team1index och team2index
-      let team1index = groupObj.TeamIDs.indexOf(game.Team1ID);
-      let team2index = groupObj.TeamIDs.indexOf(game.Team2ID);
+      let team1index = teamNames.indexOf(game.Team1Name);
+      let team2index = teamNames.indexOf(game.Team2Name);
 
       //Räkna ut vem som vann
       if(game.Team1Score > game.Team2Score){
@@ -401,9 +326,20 @@ async function reCalculateGroup(game){
         goalMatrix[team1index][team2index] = game.Team1Score;
         goalMatrix[team2index][team1index] = game.Team2Score;
       }
+      if(game.Team1Score == game.Team2Score){
+        winMatrix[team1index][team2index] = 2;
+        winMatrix[team2index][team1index] = 2;
+
+        goalMatrix[team1index][team2index] = game.Team1Score;
+        goalMatrix[team2index][team1index] = game.Team2Score;
+      }
       };
     })
-
+  let advanceGroup = false;
+  
+  if(finishedGamesCount == groupGames.length){
+    advanceGroup = true;
+  }
   //Skapa lista med statistik i ordning
   let stats = [];
   //Mappa namn till index
@@ -425,6 +361,9 @@ async function reCalculateGroup(game){
       }
       if(winMatrix[i][j] == -1){
         gamesLost += 1;
+      }
+      if(winMatrix[i][j] == 2){
+        points += 1;
       }
       gd += goalMatrix[i][j];
       gd -= goalMatrix[j][i];
@@ -480,25 +419,38 @@ async function reCalculateGroup(game){
 
   let newTeamData = [];
   for(let i = 0; i < finalTeamIndices.length; i++){
+    let tmp = []
     for(let j = 0; j < 6; j++){
-      newTeamData.push(stats[((finalTeamIndices[i]*6)+j)])
+      tmp.push(stats[((finalTeamIndices[i]*6)+j)])
+      if(j == 5){
+        tmp.push((i+1).toString());
+      }
     }
+    newTeamData.push(tmp);
   }
   let newTeamIDs = [];
-  for(let i = 0; i < newTeamData.length/6; i++){
+  for(let i = 0; i < newTeamData.length; i++){
     for(let j = 0; j < teamNames.length; j++){
-      if(teamNames[j] == newTeamData[i*6]){
-        newTeamIDs.push(groupObj.TeamIDs[j]);
+      if(teamNames[j] == newTeamData[i][0]){
+        newTeamIDs.push(teamIDs[j]);
         break;
       }
     }
   }
-
-  const groupRef = doc(db, "Group", groupObj.id)
-  await updateDoc(groupRef, {
-    TeamData: newTeamData,
-    TeamIDs: newTeamIDs
-  })
+  //Hitta id på GroupTeams
+  //Uppdatera GroupTeams
+  for(let i in newTeamIDs){
+    for(let j in groupTeams){
+      if(newTeamIDs[i] == groupTeams[j].TeamID){
+        let gtDocRef = doc(db, "GroupTeams", groupTeams[j].id)
+        await updateDoc(gtDocRef, {TeamData: newTeamData[i]})
+        break;
+      }
+    }
+  }
+  if(advanceGroup){
+    advanceTeamsFromGroup(groupObj, newTeamData, newTeamIDs);
+  }
 }
 
 function breakWon(indexList, winMatrix){
@@ -712,9 +664,10 @@ function breakTies(indexList, winMatrix, goalMatrix){
   return finalTeamPlacement;
 }
 
-export async function finishGame(game){
+export async function finishGame(game, team1ID, team2ID){
   if(game.Type === 1){
-    await advanceTeams(game);
+    //TODO: LagID
+    await advanceTeams(game, team1ID, team2ID);
   }else if(game.Type === 0){
     await reCalculateGroup(game);
   }

@@ -15,7 +15,7 @@ export default function Home() {
   const [teamName, setTeamName] = useState("");
   const [division, setDivision] = useState("0");
   const [teams, setTeams] = useState(null);
-  const teamsCollectionRef = collection(db, "Team");
+  const teamsCollectionRef = collection(db, "Teams");
   const [teamIndex, setTeamIndex] = useState(null);
   const [editName, setEditName] = useState("");
   const [editDivision, setEditDivision] = useState("");
@@ -37,10 +37,9 @@ export default function Home() {
     if(editName === ""){
       return null;
     }
-    const teamRef = doc(db, "Team", teams[teamIndex].id);
+    const teamRef = doc(db, "Teams", teams[teamIndex].id);
     await updateDoc(teamRef, {
-      Name: editName,
-      Division: newDiv
+      Name: editName
     });
     router.push("/teams")
   }

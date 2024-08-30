@@ -1,13 +1,14 @@
 import {db} from '../app/firebase-config'
 import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore'
 
+//KLAR
 export async function setAdvancements(groupId, advNames, advPos){
     //hämta alla matcher
     let adv = [];
-    const gamesRef = collection(db, "Game");
+    const gamesRef = collection(db, "Games");
     const data = await getDocs(gamesRef);
     let games = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-    const groupRe = collection(db, "Group");
+    const groupRe = collection(db, "Groups");
     const data2 = await getDocs(groupRe);
     let groups = data2.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
@@ -17,7 +18,7 @@ export async function setAdvancements(groupId, advNames, advPos){
         let innerCheck = false
         if(advPos[i] == 3){
             for(let j in groups){
-                if(advNames[i] === groups[j].Name){
+                if(advNames[i] === groups[j].GroupName){
                     innerCheck = true
                     adv.push(groups[j].id);
                     break;
@@ -44,22 +45,22 @@ export async function setAdvancements(groupId, advNames, advPos){
         newNextGame.push(adv[i])
         newNextGame.push(advPos[i])
     }
-    const groupRef = doc(db, "Group", groupId);
+    const groupRef = doc(db, "Groups", groupId);
     updateDoc(groupRef, {
-        NextGame: newNextGame
+        NextGames: newNextGame
     })
 }
 
 export async function finishGroup(groupId){
     //Dra ner gruppen
-    const groupRef = doc(db, "Group", groupId);
+    const groupRef = doc(db, "Groups", groupId);
     let res = await getDoc(groupRef);
     let groupObj = {...res.data(), id:res.id}
 
     //Checka att alla matcher är spelade
     let groupGames = groupObj.Games;
     for(let i = 0; i < groupGames.length; i++){
-        let gameRef = doc(db, "Game", groupGames[i]);
+        let gameRef = doc(db, "Games", groupGames[i]);
         let res = await getDoc(gameRef);
         let gameObj = {...res.data(), id:res.id}
         if(gameObj.Status != 2){
@@ -81,7 +82,7 @@ export async function finishGroup(groupId){
     let teamIDs = groupObj.TeamIDs;
     let teams = [];
     for(let i = 0; i < teamIDs.length; i++){
-        let teamRef = doc(db, "Team", teamIDs[i]);
+        let teamRef = doc(db, "Teams", teamIDs[i]);
         let res = await getDoc(teamRef);
         teams.push({...res.data(), id:res.id});
     }
@@ -109,20 +110,20 @@ export async function finishGroup(groupId){
         let gameID = advancements[i];
 
         if(pos == 1){
-            let gameRef = doc(db, "Game", gameID);
+            let gameRef = doc(db, "Games", gameID);
             await updateDoc(gameRef, {
                 Team1ID: teamIDToPos[i/2],
                 Team1Name: teamNames[i/2]
             })
         }else if(pos == 2){
-            let gameRef = doc(db, "Game", gameID);
+            let gameRef = doc(db, "Games", gameID);
             await updateDoc(gameRef, {
                 Team2ID: teamIDToPos[i/2],
                 Team2Name: teamNames[i/2]
             })
         }
 
-        let teamRef = doc(db, "Team", teamIDToPos[i/2]);
+        let teamRef = doc(db, "Teams", teamIDToPos[i/2]);
         let teamRes = await getDoc(teamRef);
         let team = {...teamRes.data(), id:teamRes.id};
         let teamGames = team.gameIDs

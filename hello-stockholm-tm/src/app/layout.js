@@ -5,14 +5,17 @@ import NavBar from '@/components/NavBar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Hello Stockholm',
-  description: 'Hello Stockholm Tournament Manager',
+  title: 'ÅM',
+  description: 'ÅM',
+  icons: {
+    icon: './favicon.ico', // /public path
+  },
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      
+      <link rel='icon' href='/favicon.ico' />
       <body className={inter.className}>
         <NavBar />
         {children}

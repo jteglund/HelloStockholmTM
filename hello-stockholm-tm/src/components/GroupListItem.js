@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 import styles from '../app/groups/page.module.css'
 import Link from 'next/link';
 
-function GroupTopItem({group}) {
+function GroupTopItem({groupName}) {
     return (
         <div className={styles.GroupTopContainer}>
             <div className={styles.GroupItemNameTop} style={{borderTopLeftRadius: "10px"}}>
-                <div className={styles.text}>{group.Name}</div>
+                <div className={styles.text}>{groupName}</div>
             </div>
             <div className={styles.GroupStatContainerTop}>
-                <div className={styles.text}>G</div>
-                <div className={styles.text}>W</div>
-                <div className={styles.text}>L</div>
+                <div className={styles.text}>M</div>
+                <div className={styles.text}>V</div>
+                <div className={styles.text}>F</div>
                 <div className={styles.text}>+/-</div>
             </div>
             <div className={styles.GroupPtsContainerTop} style={{borderTopRightRadius: "10px"}}>
@@ -74,23 +74,32 @@ function GroupTeamItem({team, bottom, linkTeams}) {
 export default function GroupListItem({group, groupsPage}) {
     const [teamList, setTeamList] = useState([]);
     const [lastTeam, setLastTeam] = useState(null);
+    //GROUP = [GroupTeams, ...] sorted by placement
+    const comp = (team1, team2) => {
+        if(team1.TeamData[6] <= team2.TeamData[6]){
+            return -1;
+        }else{
+            return 1;
+        }
+    }
+    group.sort(comp);
 
     const teams = () => {
-        let nStats = 6;
-        let nTeams = Math.floor(group.TeamData.length/nStats);
+        let nStats = 7;
+        let nTeams = group.length;
         let lst = [];
         
         for(let i = 0; i < nTeams-1; i++){
             let team = 
             {
                 key: i,
-                id: group.TeamIDs[i],
-                Name: group.TeamData[i*nStats],
-                Games: group.TeamData[i*nStats + 1],
-                Wins: group.TeamData[i*nStats + 2],
-                Losses: group.TeamData[i*nStats + 3],
-                PD: group.TeamData[i*nStats + 4],
-                P: group.TeamData[i*nStats + 5]
+                id: group[i].TeamID,
+                Name: group[i].TeamData[0],
+                Games: group[i].TeamData[1],
+                Wins: group[i].TeamData[2],
+                Losses: group[i].TeamData[3],
+                PD: group[i].TeamData[4],
+                P: group[i].TeamData[5]
             }
             lst.push(team)
         }
@@ -99,13 +108,13 @@ export default function GroupListItem({group, groupsPage}) {
         let lastTeam = 
         {
             key: nTeams-1,
-            id: group.TeamIDs[nTeams-1],
-            Name: group.TeamData[(group.TeamData.length-nStats)],
-            Games: group.TeamData[(group.TeamData.length-nStats) + 1],
-            Wins: group.TeamData[(group.TeamData.length-nStats) + 2],
-            Losses: group.TeamData[(group.TeamData.length-nStats) + 3],
-            PD: group.TeamData[(group.TeamData.length-nStats) + 4],
-            P: group.TeamData[(group.TeamData.length-nStats) + 5] 
+            id: group[nTeams-1].TeamID,
+            Name: group[nTeams-1].TeamData[0],
+            Games: group[nTeams-1].TeamData[1],
+            Wins: group[nTeams-1].TeamData[2],
+            Losses: group[nTeams-1].TeamData[3],
+            PD: group[nTeams-1].TeamData[4],
+            P: group[nTeams-1].TeamData[5]
         }
 
         setLastTeam(lastTeam)
@@ -115,13 +124,14 @@ export default function GroupListItem({group, groupsPage}) {
         teams();
     }, [])
 
-    let url = '/group/' + group.id;
+    let url = '/group/' + group[0].GroupID;
+    let groupName = group[0].GroupName;
     return (
         <>
             { groupsPage &&
                 <Link href={url}>
                     <div className={styles.GroupListItem}>
-                        <GroupTopItem group={group}/>
+                        <GroupTopItem groupName={groupName}/>
                         {teamList.map((team) => <GroupTeamItem key={team.key} team={team} />)}
                         { lastTeam != null
                             ? <GroupTeamItem team={lastTeam} bottom={true}/>
@@ -133,7 +143,7 @@ export default function GroupListItem({group, groupsPage}) {
             }
             { !groupsPage &&
                 <div className={styles.GroupListItem}>
-                    <GroupTopItem group={group} />
+                    <GroupTopItem groupName={groupName} />
                     {teamList.map((team) => <GroupTeamItem key={team.key} team={team} linkTeams={true}/>)}
                     { lastTeam != null
                         ? <GroupTeamItem team={lastTeam} bottom={true} linkTeams={true}/>
