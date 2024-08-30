@@ -12,7 +12,6 @@ export default function NavBar() {
         <Link className={pathname == "/" ? style.navbarTextActive : style.navbarText} href="/">LAG</Link>
         <Link className={pathname == "/schedule" ? style.navbarTextActive : style.navbarText} href="/schedule">SCHEMA</Link>
         <Link className={pathname == "/groups" ? style.navbarTextActive : style.navbarText} href="/groups">GRUPPER</Link>
-        <Link className={pathname == "/results" ? style.navbarTextActive : style.navbarText} href="/results">STÄLLNING</Link>
       </div>
     )
   }
