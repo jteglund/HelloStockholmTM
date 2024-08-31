@@ -3,13 +3,13 @@ import styles from '../../app/schedule/page.module.css'
 export default function StatusBar({status}) {
     const numberToString = (status) => {
         if(status === 0){
-            return "Framtida"
+            return "Upcoming"
         }
         if(status === 1){
-            return "Spelas nu"
+            return "Live"
         }
         if(status === 2){
-            return "Färdig"
+            return "Finished"
         }
         return ""
     }

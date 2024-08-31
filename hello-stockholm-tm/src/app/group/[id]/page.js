@@ -101,27 +101,27 @@ export default function Home({params}) {
                 }
                 
             </div>
-            <h1 className={styles.textGames}>Matcher</h1>
+            <h1 className={styles.textGames}>Games</h1>
             <div className={styles.container}>
                 
                 {
                     gamesLive &&
                     <>
-                        <h3 className={styles.textStatus}>Spelas nu</h3>
+                        <h3 className={styles.textStatus}>Live</h3>
                         {gamesLive.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesUpcoming &&
                     <>
-                        <h3 className={styles.textStatus}>Framtida</h3>
+                        <h3 className={styles.textStatus}>Upcoming</h3>
                         {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }
                 {
                     gamesPrev &&
                     <>
-                        <h3 className={styles.textStatus}>Färdigspelade</h3>
+                        <h3 className={styles.textStatus}>Finished</h3>
                         {gamesPrev.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
                     </>
                 }

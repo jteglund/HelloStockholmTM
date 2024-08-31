@@ -9,9 +9,9 @@ function GroupTopItem({groupName}) {
                 <div className={styles.text}>{groupName}</div>
             </div>
             <div className={styles.GroupStatContainerTop}>
-                <div className={styles.text}>M</div>
-                <div className={styles.text}>V</div>
-                <div className={styles.text}>F</div>
+                <div className={styles.text}>G</div>
+                <div className={styles.text}>W</div>
+                <div className={styles.text}>L</div>
                 <div className={styles.text}>+/-</div>
             </div>
             <div className={styles.GroupPtsContainerTop} style={{borderTopRightRadius: "10px"}}>

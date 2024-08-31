@@ -69,8 +69,8 @@ export default function Home() {
       
       <div className={styles.gameListContainer}>
         <select className={styles.filter} value={filter} onChange={e => setFilter(e.target.value)}>
-          <option value="LiveUpcomming">Live / Kommande</option>
-          <option value="Previous">Resultat</option>
+          <option value="LiveUpcomming">Live / Upcoming</option>
+          <option value="Previous">Result</option>
         </select>
         { filter === "LiveUpcomming"
             ? 
@@ -83,7 +83,7 @@ export default function Home() {
             }
             { gamesUpcoming.length != 0 &&
               <>
-                <h3 className={styles.typeText}>Framtida matcher</h3>
+                <h3 className={styles.typeText}>Upcoming Games</h3>
                 {gamesUpcoming.map((game) => <GameListItem key={game.id} game={game} clickable={true}/>)}
               </>
             }

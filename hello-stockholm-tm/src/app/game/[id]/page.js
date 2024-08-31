@@ -129,7 +129,7 @@ export default function Home({params}) {
             </div>
             { winnerGame &&
                 <div className={styles.advContainer}>
-                    <div className={styles.advText}>Vinnare går till: </div>
+                    <div className={styles.advText}>Winner advances to: </div>
                     <Link href={'/game/' + winnerGame.id}>
                         <div className={styles.advGame} >
                             <h4>{winnerGame.GameName}</h4>
@@ -139,7 +139,7 @@ export default function Home({params}) {
             }
             { lgameOrGroup === 1 &&
                 <div className={styles.advContainer}>
-                    <div className={styles.advText}>Förlorare går till: </div>
+                    <div className={styles.advText}>Loser advances to: </div>
                     <Link href={'/game/' + loserGame.id}>
                         <div className={styles.advGame} >
                             <h4 >{loserGame.GameName}</h4>
@@ -149,7 +149,7 @@ export default function Home({params}) {
             }
             { lgameOrGroup === 2 &&
                 <div className={styles.advContainer}>
-                    <div className={styles.advText}>Förlorare går till: </div>
+                    <div className={styles.advText}>Loser advances to: </div>
                     <Link href={'/group/' + loserGame.id}>
                         <div className={styles.advGame} >
                             <h4 >{loserGame.GroupName}</h4>

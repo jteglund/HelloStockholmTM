@@ -43,10 +43,10 @@ export default function GameListItem({game, clickable}) {
                             <div className={styles.gameBottomRightItem}>
                                 <h4 className={styles.textRight}>
                                     {game.Status === 0 
-                                        ? "Framtida"
+                                        ? "Upcoming"
                                         : game.Status === 1 
-                                        ? "Spelas"
-                                        : "Färdig"
+                                        ? "Live"
+                                        : "Finished"
                                     }
                                 </h4>
                             </div>
@@ -86,10 +86,10 @@ export default function GameListItem({game, clickable}) {
                             <div className={styles.gameBottomRightItem}>
                                 <h4 className={styles.textRight}>
                                     {game.Status === 0 
-                                        ? "Framtida"
+                                        ? "Upcoming"
                                         : game.Status === 1 
-                                        ? "Spelas"
-                                        : "Färdig"
+                                        ? "Live"
+                                        : "Finished"
                                     }
                                 </h4>
                             </div>
