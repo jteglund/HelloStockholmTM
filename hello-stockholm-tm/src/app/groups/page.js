@@ -7,17 +7,27 @@ import GroupListItem from '@/components/GroupListItem';
 import { db } from '../firebase-config'
 import { collection, getDocs} from 'firebase/firestore'
 import { createGroup } from '@/api/group';
-
+import DivisionButton from '@/components/DivisionButton';
 export default function Home() {
   const groupsCollectionRef = collection(db, "Groups");
   const groupTeamsCollectionRef = collection(db, "GroupTeams");
   const [groups, setGroups] = useState([]);
+  const [openGroups, setOGroups] = useState([]);
+  const [womenGroups, setWomenGroups] = useState([]);
   const [groupTeams, setGroupTeams] = useState([]);
 
+  const [divisionFlag, setDFlag] = useState('Open');
+
+  const setOFlag = () => {
+    setDFlag("Open");
+  }
+  const setWFlag = () => {
+    setDFlag("Women");
+  }
 
   useEffect(() => {
     const comp = (group1, group2) => {
-      if(group1[0] <= group2[0]){
+      if(group1[1] <= group2[1]){
         return -1;
       } else {
         return 1;
@@ -45,14 +55,22 @@ export default function Home() {
       }
       
       groupNames.sort(comp);
+      
+      let openGroupData = [];
+      let womenGroupData = [];
 
-      let groupData = [];
       for(let i in groupNames){
         let tmp = map.get(groupNames[i]);
-        groupData.push(tmp);
+        if(tmp[0].Division == 'Open'){
+          openGroupData.push(tmp);
+        }else if(tmp[0].Division == 'Women'){
+          womenGroupData.push(tmp);
+        }
+        //groupData.push(tmp);
       }
 
-      setGroups(groupData);
+      setOGroups(openGroupData);
+      setWomenGroups(womenGroupData);
       setGroupTeams(g2);
     }
     
@@ -61,11 +79,23 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      
-
+      <div className={styles.center}>
+        <DivisionButton
+            prompt="OPEN"
+            onPressFunction={setOFlag}
+          />
+          
+          <DivisionButton
+            prompt="WOMEN"
+            onPressFunction={setWFlag}
+          />
+        </div>
       <div className={styles.container}>
-        { 
-           groups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
+        { divisionFlag == "Open" &&
+           openGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
+        }
+        { divisionFlag == "Women" &&
+          womenGroups.map((group) => <GroupListItem key={group.id} group={group} groupsPage={true}/>)
         }
       </div>
     </main>
