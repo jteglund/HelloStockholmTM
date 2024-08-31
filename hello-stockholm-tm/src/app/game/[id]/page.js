@@ -80,7 +80,7 @@ export default function Home({params}) {
         }
         if(game){
             dateTimeConverter(game.DateTime);
-            setDivision("ÅM");
+            setDivision(game.Division);
             if(game.Type === 1){
                 let wid = "";
                 if(game.WNextGame.length > 0){
