@@ -141,7 +141,7 @@ async function advanceTeams(game, team1ID, team2ID){
   }
   
   if(game.LNextGame.length > 0){
-    if(game.LNextGame[1] != 3){
+    if(game.LNextGame[1] < 3){
       let lossRef = doc(db, "Games", game.LNextGame[0]);
       let lRes = await getDoc(lossRef);
       let lGame = {...lRes.data(), id: lRes.id}
@@ -190,7 +190,126 @@ async function advanceTeams(game, team1ID, team2ID){
 
         await addDoc(teamGameRef, teamGameObj);
         }
+    }else{
+      await advanceTeamToGroup(game.LNextGame[0], game.LNextGame[1], loserId, loserName)
     }
+  }
+}
+
+async function advanceTeamToGroup(groupID, placeholderPos, teamID, teamName) {
+  // Dra ner gruppen
+  let groupDocRef = doc(db, "Groups", groupID);
+  let res = await getDoc(groupDocRef);
+  let groupObj = {...res.data(), id: res.id};
+
+  // Dra ner GroupTeams som matchar placeholderPos och gruppID
+  const q = query(collection(db, "GroupTeams"), where("GroupID", "==", groupID));
+  const querySnapshot = await getDocs(q);
+  let groupTeamsObj = [];
+
+  querySnapshot.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    groupTeamsObj.push({...doc.data(), id: doc.id});
+  });
+
+  let gtObjToUpdate = null;
+  let numOfGtObj = 0;
+  for(let i in groupTeamsObj){
+    if(numOfGtObj > 1){
+      console.log("ERROR: Too many groupTeams objects exists in db")
+      return null;
+    }
+
+    if(groupTeamsObj[i].PlaceholderPos == placeholderPos){
+      numOfGtObj++;
+      gtObjToUpdate = groupTeamsObj[i]
+    }
+  }
+  
+  let oldTeamData = gtObjToUpdate.TeamData;
+  let oldTeamName = oldTeamData[0];
+  oldTeamData[0] = teamName;
+
+  //Lägg till data i groupTeams
+  let gtDocRef = doc(db, "GroupTeams", gtObjToUpdate.id);
+  await updateDoc(gtDocRef, {
+    'TeamID': teamID,
+    'TeamData': oldTeamData,
+  })
+
+  //Dra ner alla gruppmatcher
+  let groupGames = groupObj.GameIDs;
+  let gamesCollectionRef = collection(db, "Games")
+
+  res = await getDocs(gamesCollectionRef);
+  res.forEach((doc) => {
+    // doc.data() is never undefined for query doc snapshots
+    for(let i in groupGames){
+      if(groupGames[i].id == doc.id){
+        let tmpGameObj = {...doc.data(), id: doc.id};
+        addTeamToGroupGame(tmpGameObj, oldTeamName, teamName, teamID);
+      }
+    }
+    groupTeamsObj.push({...doc.data(), id: doc.id});
+  });
+}
+
+async function addTeamToGroupGame(gameObj, oldTeamName, newTeamName, newTeamId){
+  if(gameObj.Team1Name == oldTeamName){
+    // Updatera game med nytt namn
+    await updateTeamNameInGame(gameObj, newTeamName, 1);
+    // Ta bort gammal teamgame
+    await findAndRemoveTeamGame(gameObj.id, 1);
+    // Skapa en teamgame
+    await createTeamGame(gameObj.id, newTeamId, 1);
+    
+  }else if(gameObj.Team2Name == oldTeamName){
+    // Updatera game med nytt namn
+    await updateTeamNameInGame(gameObj, newTeamName, 2);
+    // Ta bort gammal teamgame
+    await findAndRemoveTeamGame(gameObj.id, 2);
+    // Skapa en teamgame
+    await createTeamGame(gameObj.id, newTeamId, 2);
+  }
+}
+
+async function createTeamGame(gameId, teamId, teamPos){
+  let collRef = collection(db, "TeamGame");
+  await addDoc(collRef, {
+    TeamID: teamId,
+    GameID: gameId,
+    TeamPosition: teamPos,
+  })
+}
+
+async function findAndRemoveTeamGame(gameId, teamPos){
+  let teamGames = []
+  const q = query(collection(db, "TeamGame"), where("GameID", "==", gameId));
+  const querySnapshot = await getDocs(q);
+
+  querySnapshot.forEach((doc) => {
+    let tmp = {...doc.data(), id: doc.id};
+    if(tmp.TeamPosition == teamPos){
+      teamGames.push(tmp);
+    }
+  });
+  for(let i in teamGames){
+    let docRef = doc(db, "TeamGame", teamGames[i].id);
+    await deleteDoc(docRef);
+  }
+}
+
+async function updateTeamNameInGame(gameObj, newTeamName, pos){
+  let gameId = gameObj.id;
+  let gameRef = doc(db, "Games", gameId);
+  if(pos == 1){
+    await updateDoc(gameRef, {
+      Team1Name: newTeamName,
+    });
+  }else if(pos == 2){
+    await updateDoc(gameRef, {
+      Team2Name: newTeamName,
+    });
   }
 }
 
@@ -666,7 +785,6 @@ function breakTies(indexList, winMatrix, goalMatrix){
 
 export async function finishGame(game, team1ID, team2ID){
   if(game.Type === 1){
-    //TODO: LagID
     await advanceTeams(game, team1ID, team2ID);
   }else if(game.Type === 0){
     await reCalculateGroup(game);
