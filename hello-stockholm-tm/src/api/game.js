@@ -479,7 +479,7 @@ async function reCalculateGroup(game){
       }
       if(winMatrix[i][j] == 1){
         gamesWon += 1;
-        points += 3;
+        points += 1;
       }
       if(winMatrix[i][j] == -1){
         gamesLost += 1;
