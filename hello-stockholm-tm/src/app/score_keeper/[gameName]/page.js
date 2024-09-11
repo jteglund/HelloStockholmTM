@@ -111,15 +111,7 @@ export default function Home({params}) {
     }
 
     const handleFinishGame = async () => {
-        if(game.Type == 1){
-            if(game.Team1Score != game.Team2Score){
-                const gameRef = doc(db, "Games", game.id);
-                await updateDoc(gameRef, {Status: 2});
-                await finishGame(game, team1ID, team2ID);
-                setStatus(2);
-                setPopup(0);
-            }
-        }else if(game.Type == 0){
+        if(game.Team1Score != game.Team2Score){
             const gameRef = doc(db, "Games", game.id);
             await updateDoc(gameRef, {Status: 2});
             await finishGame(game, team1ID, team2ID);
@@ -133,16 +125,11 @@ export default function Home({params}) {
     }
 
     const openPopup = () => {
-        if(game.Type == 1){
-            if(game.Team1Score != game.Team2Score){
-                setPopup(1);
-                setTieError(0);
-            }else{
-                setTieError(1);
-            }
-        }else if(game.Type == 0){
+        if(game.Team1Score != game.Team2Score){
             setPopup(1);
             setTieError(0);
+        }else{
+            setTieError(1);
         }
     }
 
