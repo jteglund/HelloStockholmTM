@@ -86,57 +86,60 @@ async function advanceTeams(game, team1ID, team2ID){
 
   //Dra ner matcherna som ska skickas till
   if(game.WNextGame.length > 0){
-    let winRef = doc(db, "Games", game.WNextGame[0]);
-    let wRes = await getDoc(winRef);
-    let wGame = {...wRes.data(), id: wRes.id}  
+    if(game.WNextGame[1] < 3){
+      let winRef = doc(db, "Games", game.WNextGame[0]);
+      let wRes = await getDoc(winRef);
+      let wGame = {...wRes.data(), id: wRes.id}  
 
-    //Dra ner alla lag kopplade till matchen
-    const teamGameRef = collection(db, "TeamGame");
-    let teamGameW = [];
-    const q = query(teamGameRef, where("GameID", "==", wGame.id));
-    const querySnapshot = await getDocs(q);
+      //Dra ner alla lag kopplade till matchen
+      const teamGameRef = collection(db, "TeamGame");
+      let teamGameW = [];
+      const q = query(teamGameRef, where("GameID", "==", wGame.id));
+      const querySnapshot = await getDocs(q);
 
-    querySnapshot.forEach((doc) => {
-        teamGameW.push({ ...doc.data(), id: doc.id });
-    });
+      querySnapshot.forEach((doc) => {
+          teamGameW.push({ ...doc.data(), id: doc.id });
+      });
 
-    //Kolla så den är ostartad
-    if(wGame.Status == 0){
-      //Kolla så att id är tomt i matchen annars måste det hanteras
-      
-      let idToRemove = "";
+      //Kolla så den är ostartad
+      if(wGame.Status == 0){
+        //Kolla så att id är tomt i matchen annars måste det hanteras
+        
+        let idToRemove = "";
 
-      for(let i in teamGameW){
-        if(teamGameW[i].TeamPosition == game.WNextGame[1]){
-          idToRemove = teamGameW[i].id;
+        for(let i in teamGameW){
+          if(teamGameW[i].TeamPosition == game.WNextGame[1]){
+            idToRemove = teamGameW[i].id;
+          }
         }
-      }
 
-      if(idToRemove != ""){
-        //Ta bort matchen från det laget
-        let removeRef = doc(db, "TeamGame", idToRemove);
-        await deleteDoc(removeRef);
-      }
-      //Lägg in lag
-      //Wgame
-      if(game.WNextGame[1] == 1){
-        await updateDoc(winRef, {
-          Team1Name: winnerName
-        })
-      }else if(game.WNextGame[1] == 2){
-        await updateDoc(winRef, {
-          Team2Name: winnerName
-        })
-      }
-      
-      let teamGameObj = {
-        TeamID: winnerId,
-        GameID: wGame.id,
-        TeamPosition: game.WNextGame[1],
-      }
+        if(idToRemove != ""){
+          //Ta bort matchen från det laget
+          let removeRef = doc(db, "TeamGame", idToRemove);
+          await deleteDoc(removeRef);
+        }
+        //Lägg in lag
+        //Wgame
+        if(game.WNextGame[1] == 1){
+          await updateDoc(winRef, {
+            Team1Name: winnerName
+          })
+        }else if(game.WNextGame[1] == 2){
+          await updateDoc(winRef, {
+            Team2Name: winnerName
+          })
+        }
+        
+        let teamGameObj = {
+          TeamID: winnerId,
+          GameID: wGame.id,
+          TeamPosition: game.WNextGame[1],
+        }
 
-      await addDoc(teamGameRef, teamGameObj);
-      
+        await addDoc(teamGameRef, teamGameObj);
+      }
+    }else{
+      await advanceTeamToGroup(game.WNextGame[0], game.WNextGame[1], winnerId, winnerName)
     }
   }
   
