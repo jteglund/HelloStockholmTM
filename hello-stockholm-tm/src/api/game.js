@@ -200,6 +200,7 @@ async function advanceTeams(game, team1ID, team2ID){
 }
 
 async function advanceTeamToGroup(groupID, placeholderPos, teamID, teamName) {
+  placeholderPos = placeholderPos -2;
   // Dra ner gruppen
   let groupDocRef = doc(db, "Groups", groupID);
   let res = await getDoc(groupDocRef);
@@ -324,46 +325,51 @@ async function advanceTeamsFromGroup(group, teamData, teamIDs){
   result.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
     teamGames.push({...doc.data(), id: doc.id})
-  }); 
+  });
+   
   for(let i = 0; i < group.NextGames.length/2; i++){
-    
-    //Kolla om matchen är ostartad
-    let gameRef = doc(db, "Games", group.NextGames[i*2])
-    let res = await getDoc(gameRef);
-    let gameObj = {...res.data(), id: res.id}
-    if(gameObj.Status != 1){
-      //Lägg till namn i match
-      let pos = group.NextGames[(i*2)+1];
-      if(pos == 1){
-        await updateDoc(gameRef, {
-          Team1Name: teamData[i][0],
-        })
-      }else if(pos == 2){
-        await updateDoc(gameRef, {
-          Team2Name: teamData[i][0],
-        })
-      }
-      //Kolla så det inte ligger någon skit i teamGames
-        //Ta bort isåfall
-      for(let j in teamGames){
-        if(teamGames[j].GameID == gameObj.id && teamGames[j].TeamPosition == pos){
-          let teamGameRef = doc(db, "TeamGame", teamGames[j].id)
-          await deleteDoc(teamGameRef);
+    let pos = group.NextGames[(i*2)+1];
+    if(pos < 3){
+      //Kolla om matchen är ostartad
+      let gameRef = doc(db, "Games", group.NextGames[i*2])
+      let res = await getDoc(gameRef);
+      let gameObj = {...res.data(), id: res.id}
+      if(gameObj.Status != 1){
+        //Lägg till namn i match
+        
+        if(pos == 1){
+          await updateDoc(gameRef, {
+            Team1Name: teamData[i][0],
+          })
+        }else if(pos == 2){
+          await updateDoc(gameRef, {
+            Team2Name: teamData[i][0],
+          })
         }
-      }
-      
-      //skapa teamgames
-      let teamGameObj = {
-        TeamID: teamIDs[i],
-        GameID: gameObj.id,
-        TeamPosition: pos,
-      }
+        //Kolla så det inte ligger någon skit i teamGames
+          //Ta bort isåfall
+        for(let j in teamGames){
+          if(teamGames[j].GameID == gameObj.id && teamGames[j].TeamPosition == pos){
+            let teamGameRef = doc(db, "TeamGame", teamGames[j].id)
+            await deleteDoc(teamGameRef);
+          }
+        }
+        
+        //skapa teamgames
+        let teamGameObj = {
+          TeamID: teamIDs[i],
+          GameID: gameObj.id,
+          TeamPosition: pos,
+        }
 
-      let tgRef = collection(db, "TeamGame");
-      await addDoc(tgRef, teamGameObj);
+        let tgRef = collection(db, "TeamGame");
+        await addDoc(tgRef, teamGameObj);
 
+      }else{
+        console.log("Game already started");
+      }
     }else{
-      console.log("Game already started");
+      advanceTeamToGroup(group.NextGames[i*2], pos, teamIDs[i], teamData[i][0])
     }
   }
 }
