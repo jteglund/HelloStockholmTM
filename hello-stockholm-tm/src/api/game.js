@@ -200,7 +200,7 @@ async function advanceTeams(game, team1ID, team2ID){
 }
 
 async function advanceTeamToGroup(groupID, placeholderPos, teamID, teamName) {
-  placeholderPos = placeholderPos -2;
+  placeholderPos = placeholderPos -2; // TODO: Indexfel? Kanske inte
   // Dra ner gruppen
   let groupDocRef = doc(db, "Groups", groupID);
   let res = await getDoc(groupDocRef);
@@ -334,6 +334,7 @@ async function advanceTeamsFromGroup(group, teamData, teamIDs){
       let gameRef = doc(db, "Games", group.NextGames[i*2])
       let res = await getDoc(gameRef);
       let gameObj = {...res.data(), id: res.id}
+      //TODO: Fixa den här skiten! Om en match är avslutad så blir det megakaos
       if(gameObj.Status != 1){
         //Lägg till namn i match
         
